@@ -2,7 +2,7 @@
 
 https://apidocs.aoncover.com
 
-## Authentification
+## Example request
 
 ```ts
 import { Api } from 'cw-public-api';
