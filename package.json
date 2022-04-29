@@ -13,7 +13,8 @@
   },
   "scripts": {
     "build": "tsc",
-    "generate": "npx swagger-typescript-api --axios -p ./swagger.json -o ./src -n cwApi.ts"
+    "generate": "npx swagger-typescript-api --axios -p ./swagger.json -o ./src -n cwApi.ts",
+    "prepublish": "npm run build"
   },
   "repository": {
     "type": "git",

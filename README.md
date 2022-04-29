@@ -26,3 +26,11 @@ async function run() {
 
 run();
 ```
+
+## Release flow
+
+1. ```curl https://apidocs.aoncover.biz/swagger/public-api/openapi.json > swagger.json```
+2. ```npm run generate```
+3. Commit changes
+4. ```npm version [<newversion> | major | minor | patch | premajor | preminor | prepatch | prerelease | from-git]```
+5. ```npm publish```
