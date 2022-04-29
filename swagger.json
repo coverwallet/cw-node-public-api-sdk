@@ -3724,7 +3724,8 @@
                                   "policy.approved",
                                   "policy.created",
                                   "policy.cancelled",
-                                  "policy.reinstated"
+                                  "policy.reinstated",
+                                  "certificate_import_finished"
                                 ],
                                 "example": "policy.approved",
                                 "description": "The name of the event that triggered the callback"
@@ -3995,7 +3996,8 @@
                                   "policy.approved",
                                   "policy.created",
                                   "policy.cancelled",
-                                  "policy.reinstated"
+                                  "policy.reinstated",
+                                  "certificate_import_finished"
                                 ],
                                 "example": "policy.approved",
                                 "description": "The name of the event that triggered the callback"
@@ -5479,7 +5481,8 @@
                                   "policy.approved",
                                   "policy.created",
                                   "policy.cancelled",
-                                  "policy.reinstated"
+                                  "policy.reinstated",
+                                  "certificate_import_finished"
                                 ],
                                 "example": "policy.approved",
                                 "description": "The name of the event that triggered the callback"
@@ -6094,6 +6097,160 @@
                           "created",
                           "subscription_id",
                           "event_name"
+                        ]
+                      }
+                    }
+                  }
+                },
+                "responses": {
+                  "200": {
+                    "description": "Your server returns this code if it accepts the callback"
+                  }
+                }
+              }
+            }
+          },
+          "certificate-import.finished": {
+            "{$request.body#/CertificateImportFinishedEndpoint}": {
+              "post": {
+                "parameters": [
+                  {
+                    "in": "header",
+                    "description": "A signature of the request body that must be validated to guarantee:\n  - The request comes from our servers\n  - The request has not been modified after it left our servers\n\n<details>\n  The value of the header will have the following format: t=timestamp,v1=signature, where t is the timestamp of the instant where the signature was created, and signature is calculated as follows:\n\n  ```\n  SHA3-512(t + \".\" + body + \".\" + signing_key)\n  ```\n  where t is the UTC timestamp of the server at the time of signature generation.\n\n  For example, assuming:\n\n  ```\n  t = 1614615808\n  body = {\"foo\":\"bar\"}\n  signing_key = 8lmFHa6wHcQ5ROigRWG5hOtTSs5yNfgtKqnG0RPLRBAmkCg2rv4KmuxWKE9ie6eEYbLVCt57R8jxhcgXcrGM7rpoqi\n  ```\n  \n  The computed signature would be:\n  ```\n  b79932049ff24e184fbd9290def5e1636aff7aab587d3b16c5fdcd1e909dc42045d08b40ab987cef212a1f36738b127ce71222fea932db686a597839664e18b9\n  ```\n  and the value of the header should be:\n  ```\n  X-Signature: t=1614615808,v1=b79932049ff24e184fbd9290def5e1636aff7aab587d3b16c5fdcd1e909dc42045d08b40ab987cef212a1f36738b127ce71222fea932db686a597839664e18b9\n  ```\n</details>\n",
+                    "name": "X-Signature",
+                    "required": true,
+                    "schema": {
+                      "type": "string",
+                      "example": "t=1614615808,v1=b79932049ff24e184fbd9290def5e1636aff7aab587d3b16c5fdcd1e909dc42045d08b40ab987cef212a1f36738b127ce71222fea932db686a597839664e18b9"
+                    }
+                  }
+                ],
+                "requestBody": {
+                  "required": true,
+                  "content": {
+                    "application/json": {
+                      "schema": {
+                        "allOf": [
+                          {
+                            "type": "object",
+                            "properties": {
+                              "data": {
+                                "type": "object",
+                                "properties": {
+                                  "results": {
+                                    "type": "array",
+                                    "items": [
+                                      {
+                                        "type": "object",
+                                        "properties": {
+                                          "status": {
+                                            "type": "string",
+                                            "enum": ["SUCCESS", "FAILED"],
+                                            "description": "Status of the certificate import operation"
+                                          },
+                                          "request": {
+                                            "type": "object",
+                                            "properties": {
+                                              "external_id": {
+                                                "type": "string",
+                                                "description": "Unique identifier for your batch operation"
+                                              }
+                                            },
+                                            "required": ["external_id"]
+                                          },
+                                          "certificate": {
+                                            "type": "object",
+                                            "properties": {
+                                              "id": {
+                                                "type": "string",
+                                                "description": "Coverwallet unique identifier"
+                                              },
+                                              "external_id": {
+                                                "type": "string",
+                                                "description": "Certificate external id, previously received by the API."
+                                              }
+                                            },
+                                            "required": ["id", "external_id"]
+                                          },
+                                          "errors": {
+                                            "type": "array",
+                                            "items": [
+                                              {
+                                                "type": "object",
+                                                "properties": {
+                                                  "source": {
+                                                    "type": "string",
+                                                    "example": "source"
+                                                  },
+                                                  "type": {
+                                                    "type": "string",
+                                                    "enum": [
+                                                      "VALIDATION",
+                                                      "RECORD_NOT_FOUND",
+                                                      "DUPLICATED",
+                                                      "INTERNAL_SERVER_ERROR"
+                                                    ]
+                                                  },
+                                                  "message": {
+                                                    "type": "string",
+                                                    "example": "Message"
+                                                  }
+                                                },
+                                                "required": [
+                                                  "source",
+                                                  "type",
+                                                  "message"
+                                                ]
+                                              }
+                                            ]
+                                          }
+                                        },
+                                        "required": [
+                                          "status",
+                                          "certificate",
+                                          "request",
+                                          "errors"
+                                        ]
+                                      }
+                                    ]
+                                  }
+                                },
+                                "required": ["results"]
+                              }
+                            }
+                          },
+                          {
+                            "type": "object",
+                            "properties": {
+                              "created": {
+                                "type": "integer",
+                                "example": 1614615808,
+                                "description": "Timestamp of the moment when the event happened"
+                              },
+                              "subscription_id": {
+                                "type": "string",
+                                "format": "uuid",
+                                "description": "The ID of the subscription that triggered the callback"
+                              },
+                              "event_name": {
+                                "type": "string",
+                                "enum": [
+                                  "policy.approved",
+                                  "policy.created",
+                                  "policy.cancelled",
+                                  "policy.reinstated",
+                                  "certificate_import_finished"
+                                ],
+                                "example": "policy.approved",
+                                "description": "The name of the event that triggered the callback"
+                              }
+                            },
+                            "required": [
+                              "created",
+                              "subscription_id",
+                              "event_name"
+                            ]
+                          }
                         ]
                       }
                     }
@@ -8840,76 +8997,103 @@
               "schema": {
                 "type": "object",
                 "properties": {
-                  "operation_id": {
-                    "type": "string",
-                    "description": "uuid used for traceability"
-                  },
-                  "certificate_id": { "type": "string" },
-                  "document": {
-                    "type": "string",
-                    "description": "PDF in Base-64",
-                    "example": "VGVzdCBjZXJ0aWZpY2F0ZQo="
-                  },
-                  "type": { "type": "string", "example": "Ad Hoc" },
-                  "effective_date": {
-                    "type": "string",
-                    "example": "2021-04-12"
-                  },
-                  "expiration_date": {
-                    "type": "string",
-                    "example": "2021-04-12"
-                  },
-                  "certificate_holder": {
+                  "certificate": {
                     "type": "object",
                     "properties": {
-                      "name": { "type": "string" },
-                      "address": {
+                      "id": { "type": "string" },
+                      "document": {
+                        "type": "string",
+                        "description": "PDF in Base-64",
+                        "example": "VGVzdCBjZXJ0aWZpY2F0ZQo="
+                      },
+                      "effective_date": {
+                        "type": "string",
+                        "example": "2021-04-12"
+                      },
+                      "expiration_date": {
+                        "type": "string",
+                        "example": "2021-04-12"
+                      },
+                      "certificate_holder": {
                         "type": "object",
                         "properties": {
-                          "type": {
-                            "type": "string",
-                            "default": "billing",
-                            "enum": ["mailing", "billing"]
-                          },
-                          "address_line": {
-                            "type": "string",
-                            "description": "Street number and street name",
-                            "example": "935 Madison Ave"
-                          },
-                          "city": { "type": "string", "example": "New York" },
-                          "state": { "type": "string", "example": "NY" },
-                          "country_code": {
-                            "type": "string",
-                            "description": "Country code component of an address\n  * Must be a valid ISO 3166-1 Alpha-2 country code\n",
-                            "example": "US"
-                          },
-                          "postal_code": {
-                            "type": "string",
-                            "description": "Postcode or ZIP code of an address",
-                            "example": "10065"
+                          "name": { "type": "string" },
+                          "address": {
+                            "type": "object",
+                            "properties": {
+                              "type": {
+                                "type": "string",
+                                "default": "billing",
+                                "enum": ["mailing", "billing"]
+                              },
+                              "address_line": {
+                                "type": "string",
+                                "description": "Street number and street name",
+                                "example": "935 Madison Ave"
+                              },
+                              "city": {
+                                "type": "string",
+                                "example": "New York"
+                              },
+                              "state": { "type": "string", "example": "NY" },
+                              "country_code": {
+                                "type": "string",
+                                "description": "Country code component of an address\n  * Must be a valid ISO 3166-1 Alpha-2 country code\n",
+                                "example": "US"
+                              },
+                              "postal_code": {
+                                "type": "string",
+                                "description": "Postcode or ZIP code of an address",
+                                "example": "10065"
+                              }
+                            },
+                            "required": ["address_line"]
                           }
                         },
-                        "required": ["address_line"]
+                        "required": ["name", "address"]
                       }
                     },
-                    "required": ["name", "address"]
+                    "required": [
+                      "id",
+                      "document",
+                      "effective_date",
+                      "expiration_date",
+                      "certificate_holder"
+                    ]
                   },
                   "request": {
                     "type": "object",
                     "properties": {
-                      "request_number": {
+                      "external_id": {
                         "type": "string",
-                        "example": "22022823448727"
+                        "example": "22022823448727",
+                        "description": "Unique identifier for your batch operation"
                       },
-                      "internal_request_number": { "type": "string" },
+                      "internal_id": {
+                        "type": "string",
+                        "example": "928731223"
+                      },
+                      "size": { "type": "integer", "example": 100 },
+                      "type": {
+                        "type": "string",
+                        "enum": ["ADHOC", "RENEWAL"],
+                        "example": "ADHOC"
+                      },
                       "delivery_emails": {
                         "type": "array",
-                        "items": [{ "type": "string" }]
+                        "items": [
+                          {
+                            "type": "string",
+                            "format": "email",
+                            "example": "example@example.com"
+                          }
+                        ]
                       }
                     },
                     "required": [
-                      "request_number",
-                      "internal_request_number",
+                      "external_id",
+                      "size",
+                      "type",
                       "delivery_emails"
                     ]
                   },
@@ -8946,18 +9130,7 @@
                     "properties": { "url": { "type": "string" } }
                   }
                 },
-                "required": [
-                  "operation_id",
-                  "certificate_id",
-                  "document",
-                  "type",
-                  "effective_date",
-                  "expiration_date",
-                  "certificate_holder",
-                  "request",
-                  "policies",
-                  "callback"
-                ]
+                "required": ["request", "policies", "certificate"]
               }
             }
           },
@@ -8974,79 +9147,106 @@
                     "data": {
                       "type": "object",
                       "properties": {
-                        "operation_id": {
-                          "type": "string",
-                          "description": "uuid used for traceability"
-                        },
-                        "certificate_id": { "type": "string" },
-                        "document": {
-                          "type": "string",
-                          "description": "PDF in Base-64",
-                          "example": "VGVzdCBjZXJ0aWZpY2F0ZQo="
-                        },
-                        "type": { "type": "string", "example": "Ad Hoc" },
-                        "effective_date": {
-                          "type": "string",
-                          "example": "2021-04-12"
-                        },
-                        "expiration_date": {
-                          "type": "string",
-                          "example": "2021-04-12"
-                        },
-                        "certificate_holder": {
+                        "certificate": {
                           "type": "object",
                           "properties": {
-                            "name": { "type": "string" },
-                            "address": {
+                            "id": { "type": "string" },
+                            "document": {
+                              "type": "string",
+                              "description": "PDF in Base-64",
+                              "example": "VGVzdCBjZXJ0aWZpY2F0ZQo="
+                            },
+                            "effective_date": {
+                              "type": "string",
+                              "example": "2021-04-12"
+                            },
+                            "expiration_date": {
+                              "type": "string",
+                              "example": "2021-04-12"
+                            },
+                            "certificate_holder": {
                               "type": "object",
                               "properties": {
-                                "type": {
-                                  "type": "string",
-                                  "default": "billing",
-                                  "enum": ["mailing", "billing"]
-                                },
-                                "address_line": {
-                                  "type": "string",
-                                  "description": "Street number and street name",
-                                  "example": "935 Madison Ave"
-                                },
-                                "city": {
-                                  "type": "string",
-                                  "example": "New York"
-                                },
-                                "state": { "type": "string", "example": "NY" },
-                                "country_code": {
-                                  "type": "string",
-                                  "description": "Country code component of an address\n  * Must be a valid ISO 3166-1 Alpha-2 country code\n",
-                                  "example": "US"
-                                },
-                                "postal_code": {
-                                  "type": "string",
-                                  "description": "Postcode or ZIP code of an address",
-                                  "example": "10065"
+                                "name": { "type": "string" },
+                                "address": {
+                                  "type": "object",
+                                  "properties": {
+                                    "type": {
+                                      "type": "string",
+                                      "default": "billing",
+                                      "enum": ["mailing", "billing"]
+                                    },
+                                    "address_line": {
+                                      "type": "string",
+                                      "description": "Street number and street name",
+                                      "example": "935 Madison Ave"
+                                    },
+                                    "city": {
+                                      "type": "string",
+                                      "example": "New York"
+                                    },
+                                    "state": {
+                                      "type": "string",
+                                      "example": "NY"
+                                    },
+                                    "country_code": {
+                                      "type": "string",
+                                      "description": "Country code component of an address\n  * Must be a valid ISO 3166-1 Alpha-2 country code\n",
+                                      "example": "US"
+                                    },
+                                    "postal_code": {
+                                      "type": "string",
+                                      "description": "Postcode or ZIP code of an address",
+                                      "example": "10065"
+                                    }
+                                  },
+                                  "required": ["address_line"]
                                 }
                               },
-                              "required": ["address_line"]
+                              "required": ["name", "address"]
                             }
                           },
-                          "required": ["name", "address"]
+                          "required": [
+                            "id",
+                            "document",
+                            "effective_date",
+                            "expiration_date",
+                            "certificate_holder"
+                          ]
                         },
                         "request": {
                           "type": "object",
                           "properties": {
-                            "request_number": {
+                            "external_id": {
                               "type": "string",
-                              "example": "22022823448727"
+                              "example": "22022823448727",
+                              "description": "Unique identifier for your batch operation"
                             },
-                            "internal_request_number": { "type": "string" },
+                            "internal_id": {
+                              "type": "string",
+                              "example": "928731223"
+                            },
+                            "size": { "type": "integer", "example": 100 },
+                            "type": {
+                              "type": "string",
+                              "enum": ["ADHOC", "RENEWAL"],
+                              "example": "ADHOC"
+                            },
                             "delivery_emails": {
                               "type": "array",
-                              "items": [{ "type": "string" }]
+                              "items": [
+                                {
+                                  "type": "string",
+                                  "format": "email",
+                                  "example": "example@example.com"
+                                }
+                              ]
                             }
                           },
                           "required": [
-                            "request_number",
-                            "internal_request_number",
+                            "external_id",
+                            "size",
+                            "type",
                             "delivery_emails"
                           ]
                         },
@@ -9091,18 +9291,7 @@
                           "properties": { "url": { "type": "string" } }
                         }
                       },
-                      "required": [
-                        "operation_id",
-                        "certificate_id",
-                        "document",
-                        "type",
-                        "effective_date",
-                        "expiration_date",
-                        "certificate_holder",
-                        "request",
-                        "policies",
-                        "callback"
-                      ]
+                      "required": ["request", "policies", "certificate"]
                     }
                   }
                 }
@@ -10105,72 +10294,88 @@
       "CertificateSyncronization": {
         "type": "object",
         "properties": {
-          "operation_id": {
-            "type": "string",
-            "description": "uuid used for traceability"
-          },
-          "certificate_id": { "type": "string" },
-          "document": {
-            "type": "string",
-            "description": "PDF in Base-64",
-            "example": "VGVzdCBjZXJ0aWZpY2F0ZQo="
-          },
-          "type": { "type": "string", "example": "Ad Hoc" },
-          "effective_date": { "type": "string", "example": "2021-04-12" },
-          "expiration_date": { "type": "string", "example": "2021-04-12" },
-          "certificate_holder": {
+          "certificate": {
             "type": "object",
             "properties": {
-              "name": { "type": "string" },
-              "address": {
+              "id": { "type": "string" },
+              "document": {
+                "type": "string",
+                "description": "PDF in Base-64",
+                "example": "VGVzdCBjZXJ0aWZpY2F0ZQo="
+              },
+              "effective_date": { "type": "string", "example": "2021-04-12" },
+              "expiration_date": { "type": "string", "example": "2021-04-12" },
+              "certificate_holder": {
                 "type": "object",
                 "properties": {
-                  "type": {
-                    "type": "string",
-                    "default": "billing",
-                    "enum": ["mailing", "billing"]
-                  },
-                  "address_line": {
-                    "type": "string",
-                    "description": "Street number and street name",
-                    "example": "935 Madison Ave"
-                  },
-                  "city": { "type": "string", "example": "New York" },
-                  "state": { "type": "string", "example": "NY" },
-                  "country_code": {
-                    "type": "string",
-                    "description": "Country code component of an address\n  * Must be a valid ISO 3166-1 Alpha-2 country code\n",
-                    "example": "US"
-                  },
-                  "postal_code": {
-                    "type": "string",
-                    "description": "Postcode or ZIP code of an address",
-                    "example": "10065"
+                  "name": { "type": "string" },
+                  "address": {
+                    "type": "object",
+                    "properties": {
+                      "type": {
+                        "type": "string",
+                        "default": "billing",
+                        "enum": ["mailing", "billing"]
+                      },
+                      "address_line": {
+                        "type": "string",
+                        "description": "Street number and street name",
+                        "example": "935 Madison Ave"
+                      },
+                      "city": { "type": "string", "example": "New York" },
+                      "state": { "type": "string", "example": "NY" },
+                      "country_code": {
+                        "type": "string",
+                        "description": "Country code component of an address\n  * Must be a valid ISO 3166-1 Alpha-2 country code\n",
+                        "example": "US"
+                      },
+                      "postal_code": {
+                        "type": "string",
+                        "description": "Postcode or ZIP code of an address",
+                        "example": "10065"
+                      }
+                    },
+                    "required": ["address_line"]
                   }
                 },
-                "required": ["address_line"]
+                "required": ["name", "address"]
               }
             },
-            "required": ["name", "address"]
+            "required": [
+              "id",
+              "document",
+              "effective_date",
+              "expiration_date",
+              "certificate_holder"
+            ]
           },
           "request": {
             "type": "object",
             "properties": {
-              "request_number": {
+              "external_id": {
                 "type": "string",
-                "example": "22022823448727"
+                "example": "22022823448727",
+                "description": "Unique identifier for your batch operation"
               },
-              "internal_request_number": { "type": "string" },
+              "internal_id": { "type": "string", "example": "928731223" },
+              "size": { "type": "integer", "example": 100 },
+              "type": {
+                "type": "string",
+                "enum": ["ADHOC", "RENEWAL"],
+                "example": "ADHOC"
+              },
               "delivery_emails": {
                 "type": "array",
-                "items": [{ "type": "string" }]
+                "items": [
+                  {
+                    "type": "string",
+                    "format": "email",
+                    "example": "example@example.com"
+                  }
+                ]
               }
             },
-            "required": [
-              "request_number",
-              "internal_request_number",
-              "delivery_emails"
-            ]
+            "required": ["external_id", "size", "type", "delivery_emails"]
           },
           "policies": {
             "additionalItems": true,
@@ -10203,18 +10408,7 @@
             "properties": { "url": { "type": "string" } }
           }
         },
-        "required": [
-          "operation_id",
-          "certificate_id",
-          "document",
-          "type",
-          "effective_date",
-          "expiration_date",
-          "certificate_holder",
-          "request",
-          "policies",
-          "callback"
-        ]
+        "required": ["request", "policies", "certificate"]
       },
       "PatchRequest": {
         "type": "array",

@@ -177,40 +177,34 @@ export type Quote = { id: string } & {
 };
 
 export interface CertificateSyncronization {
-  /** uuid used for traceability */
-  operation_id: string;
-  certificate_id: string;
-
-  /**
-   * PDF in Base-64
-   * @example VGVzdCBjZXJ0aWZpY2F0ZQo=
-   */
-  document: string;
-
-  /** @example Ad Hoc */
-  type: string;
-
-  /** @example 2021-04-12 */
-  effective_date: string;
-
-  /** @example 2021-04-12 */
-  expiration_date: string;
-  certificate_holder: {
-    name: string;
-    address: {
-      type?: "mailing" | "billing";
-      address_line: string;
-      city?: string;
-      state?: string;
-      country_code?: string;
-      postal_code?: string;
+  certificate: {
+    id: string;
+    document: string;
+    effective_date: string;
+    expiration_date: string;
+    certificate_holder: {
+      name: string;
+      address: {
+        type?: "mailing" | "billing";
+        address_line: string;
+        city?: string;
+        state?: string;
+        country_code?: string;
+        postal_code?: string;
+      };
     };
   };
-  request: { request_number: string; internal_request_number: string; delivery_emails: any[] };
+  request: {
+    external_id: string;
+    internal_id?: string;
+    size: number;
+    type: "ADHOC" | "RENEWAL";
+    delivery_emails: any[];
+  };
 
   /** @example [{"lobs":[{"code":"EERI","name":"ERISA Bond"}]}] */
   policies: any[];
-  callback: { url?: string };
+  callback?: { url?: string };
 }
 
 export type PatchRequest = {
@@ -1776,52 +1770,64 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     addAccountDocumentCertificate: (
       id: string,
       data: {
-        operation_id: string;
-        certificate_id: string;
-        document: string;
-        type: string;
-        effective_date: string;
-        expiration_date: string;
-        certificate_holder: {
-          name: string;
-          address: {
-            type?: "mailing" | "billing";
-            address_line: string;
-            city?: string;
-            state?: string;
-            country_code?: string;
-            postal_code?: string;
+        certificate: {
+          id: string;
+          document: string;
+          effective_date: string;
+          expiration_date: string;
+          certificate_holder: {
+            name: string;
+            address: {
+              type?: "mailing" | "billing";
+              address_line: string;
+              city?: string;
+              state?: string;
+              country_code?: string;
+              postal_code?: string;
+            };
           };
         };
-        request: { request_number: string; internal_request_number: string; delivery_emails: any[] };
+        request: {
+          external_id: string;
+          internal_id?: string;
+          size: number;
+          type: "ADHOC" | "RENEWAL";
+          delivery_emails: any[];
+        };
         policies: any[];
-        callback: { url?: string };
+        callback?: { url?: string };
       },
       params: RequestParams = {},
     ) =>
       this.request<
         {
           data?: {
-            operation_id: string;
-            certificate_id: string;
-            document: string;
-            type: string;
-            effective_date: string;
-            expiration_date: string;
-            certificate_holder: {
-              name: string;
-              address: {
-                type?: "mailing" | "billing";
-                address_line: string;
-                city?: string;
-                state?: string;
-                country_code?: string;
-                postal_code?: string;
+            certificate: {
+              id: string;
+              document: string;
+              effective_date: string;
+              expiration_date: string;
+              certificate_holder: {
+                name: string;
+                address: {
+                  type?: "mailing" | "billing";
+                  address_line: string;
+                  city?: string;
+                  state?: string;
+                  country_code?: string;
+                  postal_code?: string;
+                };
               };
             };
-            request: { request_number: string; internal_request_number: string; delivery_emails: any[] };
+            request: {
+              external_id: string;
+              internal_id?: string;
+              size: number;
+              type: "ADHOC" | "RENEWAL";
+              delivery_emails: any[];
+            };
             policies: any[];
-            callback: { url?: string };
+            callback?: { url?: string };
           };
         },
         { errors?: { source?: string; type: string; message: string }[] }
