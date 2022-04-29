@@ -49,11 +49,7 @@ export type Account = { id: string } & {
     fulltime_employees?: number;
     parttime_employees?: number;
   };
-  industry?: {
-    type?: "sic" | "naics" | "naf" | "anzsic";
-    class_code?: string;
-    subclass_code?: string;
-  };
+  industry?: { type?: "sic" | "naics" | "naf" | "anzsic"; class_code?: string; subclass_code?: string };
   addresses?: {
     type?: "mailing" | "billing";
     address_line: string;
@@ -82,10 +78,7 @@ export type Contact = { id: string } & {
   last_name?: string;
   email?: string;
   communications_opt_out?: "email" | "sms" | "all" | "none";
-  contact_numbers?: {
-    type: "phone" | "extension" | "mobile" | "fax" | "other";
-    number: string;
-  }[];
+  contact_numbers?: { type: "phone" | "extension" | "mobile" | "fax" | "other"; number: string }[];
 };
 
 export type Endorsement = { id: string } & {
@@ -102,12 +95,7 @@ export type Endorsement = { id: string } & {
     | "Voided"
     | null;
   endorsement_number: string;
-  type_of_change:
-    | "Policy Change"
-    | "Cancellation"
-    | "Audit"
-    | "New policy"
-    | "Reinstatement";
+  type_of_change: "Policy Change" | "Cancellation" | "Audit" | "New policy" | "Reinstatement";
   processed_date: string;
   description: string;
   effective_date: string;
@@ -124,40 +112,18 @@ export type Payment = { id: string } & {
   id?: string;
   payment_date?: string;
   policy_id?: string;
-  status?:
-    | "Succeeded"
-    | "Failed"
-    | "Pending"
-    | "Disputed"
-    | "Billing Approved"
-    | null;
+  status?: "Succeeded" | "Failed" | "Pending" | "Disputed" | "Billing Approved" | null;
   account_id?: string;
   amount?: { amount: number; currency: string };
-  payment_method?:
-    | "Card"
-    | "Bank account"
-    | "Bank transfer"
-    | "Check"
-    | "Account Current"
-    | "Paypal";
-  payment_type?:
-    | "Stripe"
-    | "Carrier Portal"
-    | "Premium Finance Portal"
-    | "Other"
-    | "Paypal";
+  payment_method?: "Card" | "Bank account" | "Bank transfer" | "Check" | "Account Current" | "Paypal";
+  payment_type?: "Stripe" | "Carrier Portal" | "Premium Finance Portal" | "Other" | "Paypal";
   payment_concept?: string;
   endorsement_id?: string;
   related_voided_endorsement_id?: string;
   external_id?: string;
 };
 
-export type PaymentMethod = {
-  type: "credit_card";
-  provider: "stripe";
-  token: string;
-  account_id: string;
-};
+export type PaymentMethod = { type: "credit_card"; provider: "stripe"; token: string; account_id: string };
 
 export type Policy = { id: string } & {
   id?: string;
@@ -179,25 +145,14 @@ export type Policy = { id: string } & {
   taxes?: { amount: number; currency: string };
   fees?: { amount: number; currency: string };
   insurance_type?: string;
-  purchase_type?:
-    | "renewal_upload"
-    | "renewal"
-    | "new_business"
-    | "cross_sell"
-    | null;
+  purchase_type?: "renewal_upload" | "renewal" | "new_business" | "cross_sell" | null;
   renewal_flow?: "auto" | "nonauto" | null;
   billing_carrier_id?: string;
   issuing_carrier_id?: string;
   finance_contract_number?: string;
   intermediary_id?: string;
   billing_type?: "Direct" | "Agency" | "Unknown";
-  invoiced_by?:
-    | "Carrier"
-    | "Coverwallet"
-    | "Premium Finance Company"
-    | "External PAS"
-    | "Account Current"
-    | "Unknown";
+  invoiced_by?: "Carrier" | "Coverwallet" | "Premium Finance Company" | "External PAS" | "Account Current" | "Unknown";
 };
 
 export type Quote = { id: string } & {
@@ -251,11 +206,7 @@ export interface CertificateSyncronization {
       postal_code?: string;
     };
   };
-  request: {
-    request_number: string;
-    internal_request_number: string;
-    delivery_emails: any[];
-  };
+  request: { request_number: string; internal_request_number: string; delivery_emails: any[] };
 
   /** @example [{"lobs":[{"code":"EERI","name":"ERISA Bond"}]}] */
   policies: any[];
@@ -269,17 +220,11 @@ export type PatchRequest = {
   from?: string;
 }[];
 
-import axios, {
-  AxiosInstance,
-  AxiosRequestConfig,
-  AxiosResponse,
-  ResponseType,
-} from "axios";
+import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse, ResponseType } from "axios";
 
 export type QueryParamsType = Record<string | number, any>;
 
-export interface FullRequestParams
-  extends Omit<AxiosRequestConfig, "data" | "params" | "url" | "responseType"> {
+export interface FullRequestParams extends Omit<AxiosRequestConfig, "data" | "params" | "url" | "responseType"> {
   /** set parameter to `true` for call `securityWorker` for this request */
   secure?: boolean;
   /** request path */
@@ -294,15 +239,11 @@ export interface FullRequestParams
   body?: unknown;
 }
 
-export type RequestParams = Omit<
-  FullRequestParams,
-  "body" | "method" | "query" | "path"
->;
+export type RequestParams = Omit<FullRequestParams, "body" | "method" | "query" | "path">;
 
-export interface ApiConfig<SecurityDataType = unknown>
-  extends Omit<AxiosRequestConfig, "data" | "cancelToken"> {
+export interface ApiConfig<SecurityDataType = unknown> extends Omit<AxiosRequestConfig, "data" | "cancelToken"> {
   securityWorker?: (
-    securityData: SecurityDataType | null
+    securityData: SecurityDataType | null,
   ) => Promise<AxiosRequestConfig | void> | AxiosRequestConfig | void;
   secure?: boolean;
   format?: ResponseType;
@@ -321,12 +262,7 @@ export class HttpClient<SecurityDataType = unknown> {
   private secure?: boolean;
   private format?: ResponseType;
 
-  constructor({
-    securityWorker,
-    secure,
-    format,
-    ...axiosConfig
-  }: ApiConfig<SecurityDataType> = {}) {
+  constructor({ securityWorker, secure, format, ...axiosConfig }: ApiConfig<SecurityDataType> = {}) {
     this.instance = axios.create({
       ...axiosConfig,
       baseURL: axiosConfig.baseURL || "https://public-api.aoncover.biz/v1",
@@ -340,10 +276,7 @@ export class HttpClient<SecurityDataType = unknown> {
     this.securityData = data;
   };
 
-  private mergeRequestParams(
-    params1: AxiosRequestConfig,
-    params2?: AxiosRequestConfig
-  ): AxiosRequestConfig {
+  private mergeRequestParams(params1: AxiosRequestConfig, params2?: AxiosRequestConfig): AxiosRequestConfig {
     return {
       ...this.instance.defaults,
       ...params1,
@@ -365,7 +298,7 @@ export class HttpClient<SecurityDataType = unknown> {
           ? property
           : typeof property === "object" && property !== null
           ? JSON.stringify(property)
-          : `${property}`
+          : `${property}`,
       );
       return formData;
     }, new FormData());
@@ -388,12 +321,7 @@ export class HttpClient<SecurityDataType = unknown> {
     const requestParams = this.mergeRequestParams(params, secureParams);
     const responseFormat = (format && this.format) || void 0;
 
-    if (
-      type === ContentType.FormData &&
-      body &&
-      body !== null &&
-      typeof body === "object"
-    ) {
+    if (type === ContentType.FormData && body && body !== null && typeof body === "object") {
       requestParams.headers.common = { Accept: "*/*" };
       requestParams.headers.post = {};
       requestParams.headers.put = {};
@@ -404,9 +332,7 @@ export class HttpClient<SecurityDataType = unknown> {
     return this.instance.request({
       ...requestParams,
       headers: {
-        ...(type && type !== ContentType.FormData
-          ? { "Content-Type": type }
-          : {}),
+        ...(type && type !== ContentType.FormData ? { "Content-Type": type } : {}),
         ...(requestParams.headers || {}),
       },
       params: query,
@@ -469,9 +395,7 @@ export class HttpClient<SecurityDataType = unknown> {
  * | REUSED_IDEMPOTENCY_KEY | The provided idempotency key has already been used in another request with a different body. |
  * </details>
  */
-export class Api<
-  SecurityDataType extends unknown
-> extends HttpClient<SecurityDataType> {
+export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDataType> {
   oauth = {
     /**
      * @description Exchange your email and password by an access token that can be used to authenticate subsequent requests.
@@ -483,28 +407,12 @@ export class Api<
      */
     getAccessToken: (
       data:
-        | {
-            grant_type: "password";
-            username: string;
-            password: string;
-            scope?: string;
-          }
-        | {
-            grant_type: "client_credentials";
-            client_id: string;
-            client_secret: string;
-            scope?: string;
-          },
-      params: RequestParams = {}
+        | { grant_type: "password"; username: string; password: string; scope?: string }
+        | { grant_type: "client_credentials"; client_id: string; client_secret: string; scope?: string },
+      params: RequestParams = {},
     ) =>
       this.request<
-        {
-          access_token?: string;
-          token_type?: string;
-          expires_in?: number;
-          scope?: string;
-          created_at?: number;
-        },
+        { access_token?: string; token_type?: string; expires_in?: number; scope?: string; created_at?: number },
         { errors?: { source?: string; type: string; message: string }[] }
       >({
         path: `/oauth/token`,
@@ -538,11 +446,7 @@ export class Api<
           fulltime_employees?: number;
           parttime_employees?: number;
         };
-        industry?: {
-          type?: "sic" | "naics" | "naf" | "anzsic";
-          class_code?: string;
-          subclass_code?: string;
-        };
+        industry?: { type?: "sic" | "naics" | "naf" | "anzsic"; class_code?: string; subclass_code?: string };
         addresses?: {
           type?: "mailing" | "billing";
           address_line: string;
@@ -554,7 +458,7 @@ export class Api<
         email?: string;
         phone_number?: string;
       },
-      params: RequestParams = {}
+      params: RequestParams = {},
     ) =>
       this.request<
         {
@@ -570,11 +474,7 @@ export class Api<
               fulltime_employees?: number;
               parttime_employees?: number;
             };
-            industry?: {
-              type?: "sic" | "naics" | "naf" | "anzsic";
-              class_code?: string;
-              subclass_code?: string;
-            };
+            industry?: { type?: "sic" | "naics" | "naf" | "anzsic"; class_code?: string; subclass_code?: string };
             addresses?: {
               type?: "mailing" | "billing";
               address_line: string;
@@ -587,8 +487,7 @@ export class Api<
             phone_number?: string;
           };
         },
-        | { errors?: { source?: string; type: string; message: string }[] }
-        | { message?: string }
+        { errors?: { source?: string; type: string; message: string }[] } | { message?: string }
       >({
         path: `/accounts`,
         method: "POST",
@@ -623,11 +522,7 @@ export class Api<
               fulltime_employees?: number;
               parttime_employees?: number;
             };
-            industry?: {
-              type?: "sic" | "naics" | "naf" | "anzsic";
-              class_code?: string;
-              subclass_code?: string;
-            };
+            industry?: { type?: "sic" | "naics" | "naf" | "anzsic"; class_code?: string; subclass_code?: string };
             addresses?: {
               type?: "mailing" | "billing";
               address_line: string;
@@ -672,11 +567,7 @@ export class Api<
           fulltime_employees?: number;
           parttime_employees?: number;
         };
-        industry?: {
-          type?: "sic" | "naics" | "naf" | "anzsic";
-          class_code?: string;
-          subclass_code?: string;
-        };
+        industry?: { type?: "sic" | "naics" | "naf" | "anzsic"; class_code?: string; subclass_code?: string };
         addresses?: {
           type?: "mailing" | "billing";
           address_line: string;
@@ -688,7 +579,7 @@ export class Api<
         email?: string;
         phone_number?: string;
       },
-      params: RequestParams = {}
+      params: RequestParams = {},
     ) =>
       this.request<
         {
@@ -704,11 +595,7 @@ export class Api<
               fulltime_employees?: number;
               parttime_employees?: number;
             };
-            industry?: {
-              type?: "sic" | "naics" | "naf" | "anzsic";
-              class_code?: string;
-              subclass_code?: string;
-            };
+            industry?: { type?: "sic" | "naics" | "naf" | "anzsic"; class_code?: string; subclass_code?: string };
             addresses?: {
               type?: "mailing" | "billing";
               address_line: string;
@@ -751,12 +638,9 @@ export class Api<
         last_name?: string;
         email?: string;
         communications_opt_out?: "email" | "sms" | "all" | "none";
-        contact_numbers?: {
-          type: "phone" | "extension" | "mobile" | "fax" | "other";
-          number: string;
-        }[];
+        contact_numbers?: { type: "phone" | "extension" | "mobile" | "fax" | "other"; number: string }[];
       },
-      params: RequestParams = {}
+      params: RequestParams = {},
     ) =>
       this.request<
         {
@@ -767,10 +651,7 @@ export class Api<
             last_name?: string;
             email?: string;
             communications_opt_out?: "email" | "sms" | "all" | "none";
-            contact_numbers?: {
-              type: "phone" | "extension" | "mobile" | "fax" | "other";
-              number: string;
-            }[];
+            contact_numbers?: { type: "phone" | "extension" | "mobile" | "fax" | "other"; number: string }[];
           };
         },
         { errors?: { source?: string; type: string; message: string }[] }
@@ -802,7 +683,7 @@ export class Api<
         branch?: string;
         segment?: string;
       },
-      params: RequestParams = {}
+      params: RequestParams = {},
     ) =>
       this.request<
         {
@@ -856,12 +737,7 @@ export class Api<
         taxes?: { amount: number; currency: string };
         fees?: { amount: number; currency: string };
         insurance_type?: string;
-        purchase_type?:
-          | "renewal_upload"
-          | "renewal"
-          | "new_business"
-          | "cross_sell"
-          | null;
+        purchase_type?: "renewal_upload" | "renewal" | "new_business" | "cross_sell" | null;
         renewal_flow?: "auto" | "nonauto" | null;
         billing_carrier_id?: string;
         issuing_carrier_id?: string;
@@ -876,7 +752,7 @@ export class Api<
           | "Account Current"
           | "Unknown";
       },
-      params: RequestParams = {}
+      params: RequestParams = {},
     ) =>
       this.request<
         {
@@ -900,12 +776,7 @@ export class Api<
             taxes?: { amount: number; currency: string };
             fees?: { amount: number; currency: string };
             insurance_type?: string;
-            purchase_type?:
-              | "renewal_upload"
-              | "renewal"
-              | "new_business"
-              | "cross_sell"
-              | null;
+            purchase_type?: "renewal_upload" | "renewal" | "new_business" | "cross_sell" | null;
             renewal_flow?: "auto" | "nonauto" | null;
             billing_carrier_id?: string;
             issuing_carrier_id?: string;
@@ -941,10 +812,7 @@ export class Api<
      * @request GET:/policies
      * @secure
      */
-    listPolicyByExternalId: (
-      query: { external_id: string },
-      params: RequestParams = {}
-    ) =>
+    listPolicyByExternalId: (query: { external_id: string }, params: RequestParams = {}) =>
       this.request<
         {
           data?: ({ id: string } & {
@@ -967,12 +835,7 @@ export class Api<
             taxes?: { amount: number; currency: string };
             fees?: { amount: number; currency: string };
             insurance_type?: string;
-            purchase_type?:
-              | "renewal_upload"
-              | "renewal"
-              | "new_business"
-              | "cross_sell"
-              | null;
+            purchase_type?: "renewal_upload" | "renewal" | "new_business" | "cross_sell" | null;
             renewal_flow?: "auto" | "nonauto" | null;
             billing_carrier_id?: string;
             issuing_carrier_id?: string;
@@ -1030,12 +893,7 @@ export class Api<
             taxes?: { amount: number; currency: string };
             fees?: { amount: number; currency: string };
             insurance_type?: string;
-            purchase_type?:
-              | "renewal_upload"
-              | "renewal"
-              | "new_business"
-              | "cross_sell"
-              | null;
+            purchase_type?: "renewal_upload" | "renewal" | "new_business" | "cross_sell" | null;
             renewal_flow?: "auto" | "nonauto" | null;
             billing_carrier_id?: string;
             issuing_carrier_id?: string;
@@ -1086,12 +944,7 @@ export class Api<
               | "Voided"
               | null;
             endorsement_number: string;
-            type_of_change:
-              | "Policy Change"
-              | "Cancellation"
-              | "Audit"
-              | "New policy"
-              | "Reinstatement";
+            type_of_change: "Policy Change" | "Cancellation" | "Audit" | "New policy" | "Reinstatement";
             processed_date: string;
             description: string;
             effective_date: string;
@@ -1127,28 +980,11 @@ export class Api<
             id?: string;
             payment_date?: string;
             policy_id?: string;
-            status?:
-              | "Succeeded"
-              | "Failed"
-              | "Pending"
-              | "Disputed"
-              | "Billing Approved"
-              | null;
+            status?: "Succeeded" | "Failed" | "Pending" | "Disputed" | "Billing Approved" | null;
             account_id?: string;
             amount?: { amount: number; currency: string };
-            payment_method?:
-              | "Card"
-              | "Bank account"
-              | "Bank transfer"
-              | "Check"
-              | "Account Current"
-              | "Paypal";
-            payment_type?:
-              | "Stripe"
-              | "Carrier Portal"
-              | "Premium Finance Portal"
-              | "Other"
-              | "Paypal";
+            payment_method?: "Card" | "Bank account" | "Bank transfer" | "Check" | "Account Current" | "Paypal";
+            payment_type?: "Stripe" | "Carrier Portal" | "Premium Finance Portal" | "Other" | "Paypal";
             payment_concept?: string;
             endorsement_id?: string;
             related_voided_endorsement_id?: string;
@@ -1175,12 +1011,8 @@ export class Api<
      * @secure
      */
     addCertificate: (
-      data: {
-        type: "certificate_of_insurance";
-        policy_ids: string[];
-        fields: { holder_name: string };
-      },
-      params: RequestParams = {}
+      data: { type: "certificate_of_insurance"; policy_ids: string[]; fields: { holder_name: string } },
+      params: RequestParams = {},
     ) =>
       this.request<
         {
@@ -1289,7 +1121,7 @@ export class Api<
         )[];
         notify_on_error_email?: string;
       },
-      params: RequestParams = {}
+      params: RequestParams = {},
     ) =>
       this.request<
         {
@@ -1416,7 +1248,7 @@ export class Api<
         )[];
         notify_on_error_email?: string;
       },
-      params: RequestParams = {}
+      params: RequestParams = {},
     ) =>
       this.request<
         {
@@ -1493,25 +1325,10 @@ export class Api<
      * @secure
      */
     addPaymentMethod: (
-      data: {
-        type: "credit_card";
-        provider: "stripe";
-        token: string;
-        account_id: string;
-      },
-      params: RequestParams = {}
+      data: { type: "credit_card"; provider: "stripe"; token: string; account_id: string },
+      params: RequestParams = {},
     ) =>
-      this.request<
-        {
-          data?: {
-            type: "credit_card";
-            provider: "stripe";
-            token: string;
-            account_id: string;
-          };
-        },
-        void
-      >({
+      this.request<{ data?: { type: "credit_card"; provider: "stripe"; token: string; account_id: string } }, void>({
         path: `/payment_methods`,
         method: "POST",
         body: data,
@@ -1538,28 +1355,11 @@ export class Api<
             id?: string;
             payment_date?: string;
             policy_id?: string;
-            status?:
-              | "Succeeded"
-              | "Failed"
-              | "Pending"
-              | "Disputed"
-              | "Billing Approved"
-              | null;
+            status?: "Succeeded" | "Failed" | "Pending" | "Disputed" | "Billing Approved" | null;
             account_id?: string;
             amount?: { amount: number; currency: string };
-            payment_method?:
-              | "Card"
-              | "Bank account"
-              | "Bank transfer"
-              | "Check"
-              | "Account Current"
-              | "Paypal";
-            payment_type?:
-              | "Stripe"
-              | "Carrier Portal"
-              | "Premium Finance Portal"
-              | "Other"
-              | "Paypal";
+            payment_method?: "Card" | "Bank account" | "Bank transfer" | "Check" | "Account Current" | "Paypal";
+            payment_type?: "Stripe" | "Carrier Portal" | "Premium Finance Portal" | "Other" | "Paypal";
             payment_concept?: string;
             endorsement_id?: string;
             related_voided_endorsement_id?: string;
@@ -1710,12 +1510,7 @@ export class Api<
           | "Voided"
           | null;
         endorsement_number: string;
-        type_of_change:
-          | "Policy Change"
-          | "Cancellation"
-          | "Audit"
-          | "New policy"
-          | "Reinstatement";
+        type_of_change: "Policy Change" | "Cancellation" | "Audit" | "New policy" | "Reinstatement";
         processed_date: string;
         description: string;
         effective_date: string;
@@ -1725,7 +1520,7 @@ export class Api<
         financed_amount?: { amount: number; currency: string };
         correction_of_endorsement_id?: string;
       },
-      params: RequestParams = {}
+      params: RequestParams = {},
     ) =>
       this.request<
         {
@@ -1743,12 +1538,7 @@ export class Api<
               | "Voided"
               | null;
             endorsement_number: string;
-            type_of_change:
-              | "Policy Change"
-              | "Cancellation"
-              | "Audit"
-              | "New policy"
-              | "Reinstatement";
+            type_of_change: "Policy Change" | "Cancellation" | "Audit" | "New policy" | "Reinstatement";
             processed_date: string;
             description: string;
             effective_date: string;
@@ -1796,12 +1586,7 @@ export class Api<
               | "Voided"
               | null;
             endorsement_number: string;
-            type_of_change:
-              | "Policy Change"
-              | "Cancellation"
-              | "Audit"
-              | "New policy"
-              | "Reinstatement";
+            type_of_change: "Policy Change" | "Cancellation" | "Audit" | "New policy" | "Reinstatement";
             processed_date: string;
             description: string;
             effective_date: string;
@@ -1867,28 +1652,11 @@ export class Api<
             id?: string;
             payment_date?: string;
             policy_id?: string;
-            status?:
-              | "Succeeded"
-              | "Failed"
-              | "Pending"
-              | "Disputed"
-              | "Billing Approved"
-              | null;
+            status?: "Succeeded" | "Failed" | "Pending" | "Disputed" | "Billing Approved" | null;
             account_id?: string;
             amount?: { amount: number; currency: string };
-            payment_method?:
-              | "Card"
-              | "Bank account"
-              | "Bank transfer"
-              | "Check"
-              | "Account Current"
-              | "Paypal";
-            payment_type?:
-              | "Stripe"
-              | "Carrier Portal"
-              | "Premium Finance Portal"
-              | "Other"
-              | "Paypal";
+            payment_method?: "Card" | "Bank account" | "Bank transfer" | "Check" | "Account Current" | "Paypal";
+            payment_type?: "Stripe" | "Carrier Portal" | "Premium Finance Portal" | "Other" | "Paypal";
             payment_concept?: string;
             endorsement_id?: string;
             related_voided_endorsement_id?: string;
@@ -1922,12 +1690,9 @@ export class Api<
         last_name?: string;
         email?: string;
         communications_opt_out?: "email" | "sms" | "all" | "none";
-        contact_numbers?: {
-          type: "phone" | "extension" | "mobile" | "fax" | "other";
-          number: string;
-        }[];
+        contact_numbers?: { type: "phone" | "extension" | "mobile" | "fax" | "other"; number: string }[];
       },
-      params: RequestParams = {}
+      params: RequestParams = {},
     ) =>
       this.request<
         {
@@ -1938,10 +1703,7 @@ export class Api<
             last_name?: string;
             email?: string;
             communications_opt_out?: "email" | "sms" | "all" | "none";
-            contact_numbers?: {
-              type: "phone" | "extension" | "mobile" | "fax" | "other";
-              number: string;
-            }[];
+            contact_numbers?: { type: "phone" | "extension" | "mobile" | "fax" | "other"; number: string }[];
           };
         },
         { errors?: { source?: string; type: string; message: string }[] }
@@ -1973,12 +1735,9 @@ export class Api<
         last_name?: string;
         email?: string;
         communications_opt_out?: "email" | "sms" | "all" | "none";
-        contact_numbers?: {
-          type: "phone" | "extension" | "mobile" | "fax" | "other";
-          number: string;
-        }[];
+        contact_numbers?: { type: "phone" | "extension" | "mobile" | "fax" | "other"; number: string }[];
       },
-      params: RequestParams = {}
+      params: RequestParams = {},
     ) =>
       this.request<
         {
@@ -1989,10 +1748,7 @@ export class Api<
             last_name?: string;
             email?: string;
             communications_opt_out?: "email" | "sms" | "all" | "none";
-            contact_numbers?: {
-              type: "phone" | "extension" | "mobile" | "fax" | "other";
-              number: string;
-            }[];
+            contact_numbers?: { type: "phone" | "extension" | "mobile" | "fax" | "other"; number: string }[];
           };
         },
         { errors?: { source?: string; type: string; message: string }[] }
@@ -2037,15 +1793,11 @@ export class Api<
             postal_code?: string;
           };
         };
-        request: {
-          request_number: string;
-          internal_request_number: string;
-          delivery_emails: any[];
-        };
+        request: { request_number: string; internal_request_number: string; delivery_emails: any[] };
         policies: any[];
         callback: { url?: string };
       },
-      params: RequestParams = {}
+      params: RequestParams = {},
     ) =>
       this.request<
         {
@@ -2067,11 +1819,7 @@ export class Api<
                 postal_code?: string;
               };
             };
-            request: {
-              request_number: string;
-              internal_request_number: string;
-              delivery_emails: any[];
-            };
+            request: { request_number: string; internal_request_number: string; delivery_emails: any[] };
             policies: any[];
             callback: { url?: string };
           };
