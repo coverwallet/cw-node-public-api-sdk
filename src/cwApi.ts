@@ -45,11 +45,15 @@ export type Account = { id: string } & {
     website?: string;
     identification_number?: string;
     year_established?: number;
-    annual_revenue?: { value?: number; amount: number; currency: string };
+    annual_revenue?: { amount: number; currency: string };
     fulltime_employees?: number;
     parttime_employees?: number;
   };
-  industry?: { type?: "sic" | "naics" | "naf" | "anzsic"; class_code?: string; subclass_code?: string };
+  industry?: {
+    type?: "sic" | "naics" | "naf" | "anzsic";
+    class_code?: string;
+    subclass_code?: string;
+  };
   addresses?: {
     type?: "mailing" | "billing";
     address_line: string;
@@ -64,11 +68,11 @@ export type Account = { id: string } & {
 
 export type Commission = { id: string } & {
   endorsement_id?: string;
-  amount?: { value?: number; amount: number; currency: string };
+  amount?: { amount: number; currency: string };
   percentage?: number;
-  cw_servicing_fees?: { value?: number; amount: number; currency: string };
-  agency_servicing_fees?: { value?: number; amount: number; currency: string };
-  payment_processing_fees?: { value?: number; amount: number; currency: string };
+  cw_servicing_fees?: { amount: number; currency: string };
+  agency_servicing_fees?: { amount: number; currency: string };
+  payment_processing_fees?: { amount: number; currency: string };
 };
 
 export type Contact = { id: string } & {
@@ -78,7 +82,10 @@ export type Contact = { id: string } & {
   last_name?: string;
   email?: string;
   communications_opt_out?: "email" | "sms" | "all" | "none";
-  contact_numbers?: { type: "phone" | "extension" | "mobile" | "fax" | "other"; number: string }[];
+  contact_numbers?: {
+    type: "phone" | "extension" | "mobile" | "fax" | "other";
+    number: string;
+  }[];
 };
 
 export type Endorsement = { id: string } & {
@@ -92,16 +99,22 @@ export type Endorsement = { id: string } & {
     | "Approved"
     | "Payment Not Collected"
     | "Not needed"
+    | "Voided"
     | null;
   endorsement_number: string;
-  type_of_change: "Policy Change" | "Cancellation" | "Audit" | "New policy" | "Reinstatement";
+  type_of_change:
+    | "Policy Change"
+    | "Cancellation"
+    | "Audit"
+    | "New policy"
+    | "Reinstatement";
   processed_date: string;
   description: string;
   effective_date: string;
-  premium_change: { value?: number; amount: number; currency: string };
-  taxes_change: { value?: number; amount: number; currency: string };
-  fees_change: { value?: number; amount: number; currency: string };
-  financed_amount?: { value?: number; amount: number; currency: string };
+  premium_change: { amount: number; currency: string };
+  taxes_change: { amount: number; currency: string };
+  fees_change: { amount: number; currency: string };
+  financed_amount?: { amount: number; currency: string };
   correction_of_endorsement_id?: string;
 };
 
@@ -111,18 +124,40 @@ export type Payment = { id: string } & {
   id?: string;
   payment_date?: string;
   policy_id?: string;
-  status?: "Succeeded" | "Failed" | "Pending" | "Disputed" | "Billing Approved" | null;
+  status?:
+    | "Succeeded"
+    | "Failed"
+    | "Pending"
+    | "Disputed"
+    | "Billing Approved"
+    | null;
   account_id?: string;
-  amount?: { value?: number; amount: number; currency: string };
-  payment_method?: "Card" | "Bank account" | "Bank transfer" | "Check" | "Account Current" | "Paypal";
-  payment_type?: "Stripe" | "Carrier Portal" | "Premium Finance Portal" | "Other" | "Paypal";
+  amount?: { amount: number; currency: string };
+  payment_method?:
+    | "Card"
+    | "Bank account"
+    | "Bank transfer"
+    | "Check"
+    | "Account Current"
+    | "Paypal";
+  payment_type?:
+    | "Stripe"
+    | "Carrier Portal"
+    | "Premium Finance Portal"
+    | "Other"
+    | "Paypal";
   payment_concept?: string;
   endorsement_id?: string;
   related_voided_endorsement_id?: string;
   external_id?: string;
 };
 
-export type PaymentMethod = { type: "credit_card"; provider: "stripe"; token: string; account_id: string };
+export type PaymentMethod = {
+  type: "credit_card";
+  provider: "stripe";
+  token: string;
+  account_id: string;
+};
 
 export type Policy = { id: string } & {
   id?: string;
@@ -140,36 +175,111 @@ export type Policy = { id: string } & {
   effective_date?: string;
   expiration_date?: string;
   cancellation_date?: string;
-  premium?: { value?: number; amount: number; currency: string };
-  taxes?: { value?: number; amount: number; currency: string };
-  fees?: { value?: number; amount: number; currency: string };
+  premium?: { amount: number; currency: string };
+  taxes?: { amount: number; currency: string };
+  fees?: { amount: number; currency: string };
   insurance_type?: string;
-  purchase_type?: "renewal_upload" | "renewal" | "new_business" | "cross_sell" | null;
+  purchase_type?:
+    | "renewal_upload"
+    | "renewal"
+    | "new_business"
+    | "cross_sell"
+    | null;
   renewal_flow?: "auto" | "nonauto" | null;
   billing_carrier_id?: string;
   issuing_carrier_id?: string;
   finance_contract_number?: string;
   intermediary_id?: string;
+  billing_type?: "Direct" | "Agency" | "Unknown";
+  invoiced_by?:
+    | "Carrier"
+    | "Coverwallet"
+    | "Premium Finance Company"
+    | "External PAS"
+    | "Account Current"
+    | "Unknown";
 };
 
 export type Quote = { id: string } & {
   account_id?: string;
+  external_id?: string;
   insurance_type?: string;
   policy_ids?: string[];
   name?: string;
-  stage?: string;
-  premium?: { value?: number; amount: number; currency: string };
-  taxes?: { value?: number; amount: number; currency: string };
-  fees?: { value?: number; amount: number; currency: string };
+  stage?:
+    | "NON_QUOTED"
+    | "PENDING_CUSTOMER_INFORMATION"
+    | "QUOTED_PENDING_PRODUCER"
+    | "QUOTED_PENDING_APPROVAL"
+    | "QUOTED_AVAILABLE_TO_PURCHASE"
+    | "PURCHASED"
+    | "REJECTED";
+  premium?: { amount: number; currency: string };
+  taxes?: { amount: number; currency: string };
+  fees?: { amount: number; currency: string };
   effective_date?: string;
   expiration_date?: string;
 };
 
-import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse, ResponseType } from "axios";
+export interface CertificateSyncronization {
+  /** uuid used for traceability */
+  operation_id: string;
+  certificate_id: string;
+
+  /**
+   * PDF in Base-64
+   * @example VGVzdCBjZXJ0aWZpY2F0ZQo=
+   */
+  document: string;
+
+  /** @example Ad Hoc */
+  type: string;
+
+  /** @example 2021-04-12 */
+  effective_date: string;
+
+  /** @example 2021-04-12 */
+  expiration_date: string;
+  certificate_holder: {
+    name: string;
+    address: {
+      type?: "mailing" | "billing";
+      address_line: string;
+      city?: string;
+      state?: string;
+      country_code?: string;
+      postal_code?: string;
+    };
+  };
+  request: {
+    request_number: string;
+    internal_request_number: string;
+    delivery_emails: any[];
+  };
+
+  /** @example [{"lobs":[{"code":"EERI","name":"ERISA Bond"}]}] */
+  policies: any[];
+  callback: { url?: string };
+}
+
+export type PatchRequest = {
+  op: "add" | "remove" | "replace" | "move" | "copy" | "test";
+  path: string;
+  value?: object;
+  from?: string;
+}[];
+
+import axios, {
+  AxiosInstance,
+  AxiosRequestConfig,
+  AxiosResponse,
+  ResponseType,
+} from "axios";
 
 export type QueryParamsType = Record<string | number, any>;
 
-export interface FullRequestParams extends Omit<AxiosRequestConfig, "data" | "params" | "url" | "responseType"> {
+export interface FullRequestParams
+  extends Omit<AxiosRequestConfig, "data" | "params" | "url" | "responseType"> {
   /** set parameter to `true` for call `securityWorker` for this request */
   secure?: boolean;
   /** request path */
@@ -184,11 +294,15 @@ export interface FullRequestParams extends Omit<AxiosRequestConfig, "data" | "pa
   body?: unknown;
 }
 
-export type RequestParams = Omit<FullRequestParams, "body" | "method" | "query" | "path">;
+export type RequestParams = Omit<
+  FullRequestParams,
+  "body" | "method" | "query" | "path"
+>;
 
-export interface ApiConfig<SecurityDataType = unknown> extends Omit<AxiosRequestConfig, "data" | "cancelToken"> {
+export interface ApiConfig<SecurityDataType = unknown>
+  extends Omit<AxiosRequestConfig, "data" | "cancelToken"> {
   securityWorker?: (
-    securityData: SecurityDataType | null,
+    securityData: SecurityDataType | null
   ) => Promise<AxiosRequestConfig | void> | AxiosRequestConfig | void;
   secure?: boolean;
   format?: ResponseType;
@@ -207,7 +321,12 @@ export class HttpClient<SecurityDataType = unknown> {
   private secure?: boolean;
   private format?: ResponseType;
 
-  constructor({ securityWorker, secure, format, ...axiosConfig }: ApiConfig<SecurityDataType> = {}) {
+  constructor({
+    securityWorker,
+    secure,
+    format,
+    ...axiosConfig
+  }: ApiConfig<SecurityDataType> = {}) {
     this.instance = axios.create({
       ...axiosConfig,
       baseURL: axiosConfig.baseURL || "https://public-api.aoncover.biz/v1",
@@ -221,7 +340,10 @@ export class HttpClient<SecurityDataType = unknown> {
     this.securityData = data;
   };
 
-  private mergeRequestParams(params1: AxiosRequestConfig, params2?: AxiosRequestConfig): AxiosRequestConfig {
+  private mergeRequestParams(
+    params1: AxiosRequestConfig,
+    params2?: AxiosRequestConfig
+  ): AxiosRequestConfig {
     return {
       ...this.instance.defaults,
       ...params1,
@@ -243,7 +365,7 @@ export class HttpClient<SecurityDataType = unknown> {
           ? property
           : typeof property === "object" && property !== null
           ? JSON.stringify(property)
-          : `${property}`,
+          : `${property}`
       );
       return formData;
     }, new FormData());
@@ -266,7 +388,12 @@ export class HttpClient<SecurityDataType = unknown> {
     const requestParams = this.mergeRequestParams(params, secureParams);
     const responseFormat = (format && this.format) || void 0;
 
-    if (type === ContentType.FormData && body && body !== null && typeof body === "object") {
+    if (
+      type === ContentType.FormData &&
+      body &&
+      body !== null &&
+      typeof body === "object"
+    ) {
       requestParams.headers.common = { Accept: "*/*" };
       requestParams.headers.post = {};
       requestParams.headers.put = {};
@@ -277,7 +404,9 @@ export class HttpClient<SecurityDataType = unknown> {
     return this.instance.request({
       ...requestParams,
       headers: {
-        ...(type && type !== ContentType.FormData ? { "Content-Type": type } : {}),
+        ...(type && type !== ContentType.FormData
+          ? { "Content-Type": type }
+          : {}),
         ...(requestParams.headers || {}),
       },
       params: query,
@@ -340,7 +469,9 @@ export class HttpClient<SecurityDataType = unknown> {
  * | REUSED_IDEMPOTENCY_KEY | The provided idempotency key has already been used in another request with a different body. |
  * </details>
  */
-export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDataType> {
+export class Api<
+  SecurityDataType extends unknown
+> extends HttpClient<SecurityDataType> {
   oauth = {
     /**
      * @description Exchange your email and password by an access token that can be used to authenticate subsequent requests.
@@ -352,12 +483,28 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      */
     getAccessToken: (
       data:
-        | { grant_type: "password"; username: string; password: string; scope?: string }
-        | { grant_type: "client_credentials"; client_id: string; client_secret: string; scope?: string },
-      params: RequestParams = {},
+        | {
+            grant_type: "password";
+            username: string;
+            password: string;
+            scope?: string;
+          }
+        | {
+            grant_type: "client_credentials";
+            client_id: string;
+            client_secret: string;
+            scope?: string;
+          },
+      params: RequestParams = {}
     ) =>
       this.request<
-        { access_token?: string; token_type?: string; expires_in?: number; scope?: string; created_at?: number },
+        {
+          access_token?: string;
+          token_type?: string;
+          expires_in?: number;
+          scope?: string;
+          created_at?: number;
+        },
         { errors?: { source?: string; type: string; message: string }[] }
       >({
         path: `/oauth/token`,
@@ -387,11 +534,15 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
           website?: string;
           identification_number?: string;
           year_established?: number;
-          annual_revenue?: { value?: number; amount: number; currency: string };
+          annual_revenue?: { amount: number; currency: string };
           fulltime_employees?: number;
           parttime_employees?: number;
         };
-        industry?: { type?: "sic" | "naics" | "naf" | "anzsic"; class_code?: string; subclass_code?: string };
+        industry?: {
+          type?: "sic" | "naics" | "naf" | "anzsic";
+          class_code?: string;
+          subclass_code?: string;
+        };
         addresses?: {
           type?: "mailing" | "billing";
           address_line: string;
@@ -403,7 +554,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
         email?: string;
         phone_number?: string;
       },
-      params: RequestParams = {},
+      params: RequestParams = {}
     ) =>
       this.request<
         {
@@ -415,11 +566,15 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
               website?: string;
               identification_number?: string;
               year_established?: number;
-              annual_revenue?: { value?: number; amount: number; currency: string };
+              annual_revenue?: { amount: number; currency: string };
               fulltime_employees?: number;
               parttime_employees?: number;
             };
-            industry?: { type?: "sic" | "naics" | "naf" | "anzsic"; class_code?: string; subclass_code?: string };
+            industry?: {
+              type?: "sic" | "naics" | "naf" | "anzsic";
+              class_code?: string;
+              subclass_code?: string;
+            };
             addresses?: {
               type?: "mailing" | "billing";
               address_line: string;
@@ -432,7 +587,8 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
             phone_number?: string;
           };
         },
-        void
+        | { errors?: { source?: string; type: string; message: string }[] }
+        | { message?: string }
       >({
         path: `/accounts`,
         method: "POST",
@@ -463,11 +619,15 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
               website?: string;
               identification_number?: string;
               year_established?: number;
-              annual_revenue?: { value?: number; amount: number; currency: string };
+              annual_revenue?: { amount: number; currency: string };
               fulltime_employees?: number;
               parttime_employees?: number;
             };
-            industry?: { type?: "sic" | "naics" | "naf" | "anzsic"; class_code?: string; subclass_code?: string };
+            industry?: {
+              type?: "sic" | "naics" | "naf" | "anzsic";
+              class_code?: string;
+              subclass_code?: string;
+            };
             addresses?: {
               type?: "mailing" | "billing";
               address_line: string;
@@ -508,11 +668,15 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
           website?: string;
           identification_number?: string;
           year_established?: number;
-          annual_revenue?: { value?: number; amount: number; currency: string };
+          annual_revenue?: { amount: number; currency: string };
           fulltime_employees?: number;
           parttime_employees?: number;
         };
-        industry?: { type?: "sic" | "naics" | "naf" | "anzsic"; class_code?: string; subclass_code?: string };
+        industry?: {
+          type?: "sic" | "naics" | "naf" | "anzsic";
+          class_code?: string;
+          subclass_code?: string;
+        };
         addresses?: {
           type?: "mailing" | "billing";
           address_line: string;
@@ -524,7 +688,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
         email?: string;
         phone_number?: string;
       },
-      params: RequestParams = {},
+      params: RequestParams = {}
     ) =>
       this.request<
         {
@@ -536,11 +700,15 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
               website?: string;
               identification_number?: string;
               year_established?: number;
-              annual_revenue?: { value?: number; amount: number; currency: string };
+              annual_revenue?: { amount: number; currency: string };
               fulltime_employees?: number;
               parttime_employees?: number;
             };
-            industry?: { type?: "sic" | "naics" | "naf" | "anzsic"; class_code?: string; subclass_code?: string };
+            industry?: {
+              type?: "sic" | "naics" | "naf" | "anzsic";
+              class_code?: string;
+              subclass_code?: string;
+            };
             addresses?: {
               type?: "mailing" | "billing";
               address_line: string;
@@ -583,9 +751,12 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
         last_name?: string;
         email?: string;
         communications_opt_out?: "email" | "sms" | "all" | "none";
-        contact_numbers?: { type: "phone" | "extension" | "mobile" | "fax" | "other"; number: string }[];
+        contact_numbers?: {
+          type: "phone" | "extension" | "mobile" | "fax" | "other";
+          number: string;
+        }[];
       },
-      params: RequestParams = {},
+      params: RequestParams = {}
     ) =>
       this.request<
         {
@@ -596,60 +767,16 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
             last_name?: string;
             email?: string;
             communications_opt_out?: "email" | "sms" | "all" | "none";
-            contact_numbers?: { type: "phone" | "extension" | "mobile" | "fax" | "other"; number: string }[];
+            contact_numbers?: {
+              type: "phone" | "extension" | "mobile" | "fax" | "other";
+              number: string;
+            }[];
           };
         },
         { errors?: { source?: string; type: string; message: string }[] }
       >({
         path: `/accounts/${id}/contacts`,
         method: "POST",
-        body: data,
-        secure: true,
-        type: ContentType.Json,
-        format: "json",
-        ...params,
-      }),
-
-    /**
-     * @description Update a contact of an account. All fields are optional.
-     *
-     * @tags Account
-     * @name DeprecatedUpdateContact
-     * @summary Update a contact. Deprecated in favor of "PATCH /contacts/{id}"
-     * @request PATCH:/accounts/{account_id}/contacts/{contact_id}
-     * @deprecated
-     * @secure
-     */
-    deprecatedUpdateContact: (
-      accountId: string,
-      contactId: string,
-      data: {
-        account_id?: string;
-        relationship?: "primary" | "driver" | "owner" | "other";
-        first_name?: string;
-        last_name?: string;
-        email?: string;
-        communications_opt_out?: "email" | "sms" | "all" | "none";
-        contact_numbers?: { type: "phone" | "extension" | "mobile" | "fax" | "other"; number: string }[];
-      },
-      params: RequestParams = {},
-    ) =>
-      this.request<
-        {
-          data?: { id: string } & {
-            account_id?: string;
-            relationship?: "primary" | "driver" | "owner" | "other";
-            first_name?: string;
-            last_name?: string;
-            email?: string;
-            communications_opt_out?: "email" | "sms" | "all" | "none";
-            contact_numbers?: { type: "phone" | "extension" | "mobile" | "fax" | "other"; number: string }[];
-          };
-        },
-        { errors?: { source?: string; type: string; message: string }[] }
-      >({
-        path: `/accounts/${accountId}/contacts/${contactId}`,
-        method: "PATCH",
         body: data,
         secure: true,
         type: ContentType.Json,
@@ -675,7 +802,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
         branch?: string;
         segment?: string;
       },
-      params: RequestParams = {},
+      params: RequestParams = {}
     ) =>
       this.request<
         {
@@ -725,18 +852,31 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
         effective_date?: string;
         expiration_date?: string;
         cancellation_date?: string;
-        premium?: { value?: number; amount: number; currency: string };
-        taxes?: { value?: number; amount: number; currency: string };
-        fees?: { value?: number; amount: number; currency: string };
+        premium?: { amount: number; currency: string };
+        taxes?: { amount: number; currency: string };
+        fees?: { amount: number; currency: string };
         insurance_type?: string;
-        purchase_type?: "renewal_upload" | "renewal" | "new_business" | "cross_sell" | null;
+        purchase_type?:
+          | "renewal_upload"
+          | "renewal"
+          | "new_business"
+          | "cross_sell"
+          | null;
         renewal_flow?: "auto" | "nonauto" | null;
         billing_carrier_id?: string;
         issuing_carrier_id?: string;
         finance_contract_number?: string;
         intermediary_id?: string;
+        billing_type?: "Direct" | "Agency" | "Unknown";
+        invoiced_by?:
+          | "Carrier"
+          | "Coverwallet"
+          | "Premium Finance Company"
+          | "External PAS"
+          | "Account Current"
+          | "Unknown";
       },
-      params: RequestParams = {},
+      params: RequestParams = {}
     ) =>
       this.request<
         {
@@ -756,16 +896,29 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
             effective_date?: string;
             expiration_date?: string;
             cancellation_date?: string;
-            premium?: { value?: number; amount: number; currency: string };
-            taxes?: { value?: number; amount: number; currency: string };
-            fees?: { value?: number; amount: number; currency: string };
+            premium?: { amount: number; currency: string };
+            taxes?: { amount: number; currency: string };
+            fees?: { amount: number; currency: string };
             insurance_type?: string;
-            purchase_type?: "renewal_upload" | "renewal" | "new_business" | "cross_sell" | null;
+            purchase_type?:
+              | "renewal_upload"
+              | "renewal"
+              | "new_business"
+              | "cross_sell"
+              | null;
             renewal_flow?: "auto" | "nonauto" | null;
             billing_carrier_id?: string;
             issuing_carrier_id?: string;
             finance_contract_number?: string;
             intermediary_id?: string;
+            billing_type?: "Direct" | "Agency" | "Unknown";
+            invoiced_by?:
+              | "Carrier"
+              | "Coverwallet"
+              | "Premium Finance Company"
+              | "External PAS"
+              | "Account Current"
+              | "Unknown";
           };
         },
         { errors?: { source?: string; type: string; message: string }[] }
@@ -783,12 +936,15 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @description Fetch a policy by external ID
      *
      * @tags Policy
-     * @name PoliciesList
+     * @name ListPolicyByExternalId
      * @summary Fetch a policy
      * @request GET:/policies
      * @secure
      */
-    policiesList: (query: { external_id: string }, params: RequestParams = {}) =>
+    listPolicyByExternalId: (
+      query: { external_id: string },
+      params: RequestParams = {}
+    ) =>
       this.request<
         {
           data?: ({ id: string } & {
@@ -807,16 +963,29 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
             effective_date?: string;
             expiration_date?: string;
             cancellation_date?: string;
-            premium?: { value?: number; amount: number; currency: string };
-            taxes?: { value?: number; amount: number; currency: string };
-            fees?: { value?: number; amount: number; currency: string };
+            premium?: { amount: number; currency: string };
+            taxes?: { amount: number; currency: string };
+            fees?: { amount: number; currency: string };
             insurance_type?: string;
-            purchase_type?: "renewal_upload" | "renewal" | "new_business" | "cross_sell" | null;
+            purchase_type?:
+              | "renewal_upload"
+              | "renewal"
+              | "new_business"
+              | "cross_sell"
+              | null;
             renewal_flow?: "auto" | "nonauto" | null;
             billing_carrier_id?: string;
             issuing_carrier_id?: string;
             finance_contract_number?: string;
             intermediary_id?: string;
+            billing_type?: "Direct" | "Agency" | "Unknown";
+            invoiced_by?:
+              | "Carrier"
+              | "Coverwallet"
+              | "Premium Finance Company"
+              | "External PAS"
+              | "Account Current"
+              | "Unknown";
           })[];
         },
         { errors?: { source?: string; type: string; message: string }[] }
@@ -841,7 +1010,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     getPolicy: (id: string, params: RequestParams = {}) =>
       this.request<
         {
-          data?: { id: string } & {
+          data?: ({ id: string } & {
             id?: string;
             external_id?: string;
             policy_number?: string;
@@ -857,97 +1026,36 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
             effective_date?: string;
             expiration_date?: string;
             cancellation_date?: string;
-            premium?: { value?: number; amount: number; currency: string };
-            taxes?: { value?: number; amount: number; currency: string };
-            fees?: { value?: number; amount: number; currency: string };
+            premium?: { amount: number; currency: string };
+            taxes?: { amount: number; currency: string };
+            fees?: { amount: number; currency: string };
             insurance_type?: string;
-            purchase_type?: "renewal_upload" | "renewal" | "new_business" | "cross_sell" | null;
+            purchase_type?:
+              | "renewal_upload"
+              | "renewal"
+              | "new_business"
+              | "cross_sell"
+              | null;
             renewal_flow?: "auto" | "nonauto" | null;
             billing_carrier_id?: string;
             issuing_carrier_id?: string;
             finance_contract_number?: string;
             intermediary_id?: string;
-          };
+            billing_type?: "Direct" | "Agency" | "Unknown";
+            invoiced_by?:
+              | "Carrier"
+              | "Coverwallet"
+              | "Premium Finance Company"
+              | "External PAS"
+              | "Account Current"
+              | "Unknown";
+          })[];
         },
         { errors?: { source?: string; type: string; message: string }[] }
       >({
         path: `/policies/${id}`,
         method: "GET",
         secure: true,
-        format: "json",
-        ...params,
-      }),
-
-    /**
-     * @description Create an endorsement or change in the policy
-     *
-     * @tags Policy
-     * @name EndorsementsCreate
-     * @summary Create an endorsement or change in the policy. Deprecated in favor of "POST /endorsements"
-     * @request POST:/policies/{id}/endorsements
-     * @deprecated
-     * @secure
-     */
-    endorsementsCreate: (
-      id: string,
-      data: {
-        id: string;
-        policy_id: string;
-        account_id: string;
-        status:
-          | "Not started"
-          | "Pending payment"
-          | "Under review"
-          | "Approved"
-          | "Payment Not Collected"
-          | "Not needed"
-          | null;
-        endorsement_number: string;
-        type_of_change: "Policy Change" | "Cancellation" | "Audit" | "New policy" | "Reinstatement";
-        processed_date: string;
-        description: string;
-        effective_date: string;
-        premium_change: { value?: number; amount: number; currency: string };
-        taxes_change: { value?: number; amount: number; currency: string };
-        fees_change: { value?: number; amount: number; currency: string };
-        financed_amount?: { value?: number; amount: number; currency: string };
-        correction_of_endorsement_id?: string;
-      },
-      params: RequestParams = {},
-    ) =>
-      this.request<
-        {
-          data?: {
-            id: string;
-            policy_id: string;
-            account_id: string;
-            status:
-              | "Not started"
-              | "Pending payment"
-              | "Under review"
-              | "Approved"
-              | "Payment Not Collected"
-              | "Not needed"
-              | null;
-            endorsement_number: string;
-            type_of_change: "Policy Change" | "Cancellation" | "Audit" | "New policy" | "Reinstatement";
-            processed_date: string;
-            description: string;
-            effective_date: string;
-            premium_change: { value?: number; amount: number; currency: string };
-            taxes_change: { value?: number; amount: number; currency: string };
-            fees_change: { value?: number; amount: number; currency: string };
-            financed_amount?: { value?: number; amount: number; currency: string };
-            correction_of_endorsement_id?: string;
-          };
-        },
-        { errors?: { source?: string; type: string; message: string }[] }
-      >({
-        path: `/policies/${id}/endorsements`,
-        method: "POST",
-        body: data,
-        secure: true,
-        type: ContentType.Json,
         format: "json",
         ...params,
       }),
@@ -975,16 +1083,22 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
               | "Approved"
               | "Payment Not Collected"
               | "Not needed"
+              | "Voided"
               | null;
             endorsement_number: string;
-            type_of_change: "Policy Change" | "Cancellation" | "Audit" | "New policy" | "Reinstatement";
+            type_of_change:
+              | "Policy Change"
+              | "Cancellation"
+              | "Audit"
+              | "New policy"
+              | "Reinstatement";
             processed_date: string;
             description: string;
             effective_date: string;
-            premium_change: { value?: number; amount: number; currency: string };
-            taxes_change: { value?: number; amount: number; currency: string };
-            fees_change: { value?: number; amount: number; currency: string };
-            financed_amount?: { value?: number; amount: number; currency: string };
+            premium_change: { amount: number; currency: string };
+            taxes_change: { amount: number; currency: string };
+            fees_change: { amount: number; currency: string };
+            financed_amount?: { amount: number; currency: string };
             correction_of_endorsement_id?: string;
           };
         },
@@ -1001,23 +1115,40 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @description Fetch a list of policy payments
      *
      * @tags Policy
-     * @name PaymentsDetail
+     * @name ListPolicyPayments
      * @summary Fetch a list of policy payments
      * @request GET:/policies/{id}/payments
      * @secure
      */
-    paymentsDetail: (id: string, params: RequestParams = {}) =>
+    listPolicyPayments: (id: string, params: RequestParams = {}) =>
       this.request<
         {
           data?: {
             id?: string;
             payment_date?: string;
             policy_id?: string;
-            status?: "Succeeded" | "Failed" | "Pending" | "Disputed" | "Billing Approved" | null;
+            status?:
+              | "Succeeded"
+              | "Failed"
+              | "Pending"
+              | "Disputed"
+              | "Billing Approved"
+              | null;
             account_id?: string;
-            amount?: { value?: number; amount: number; currency: string };
-            payment_method?: "Card" | "Bank account" | "Bank transfer" | "Check" | "Account Current" | "Paypal";
-            payment_type?: "Stripe" | "Carrier Portal" | "Premium Finance Portal" | "Other" | "Paypal";
+            amount?: { amount: number; currency: string };
+            payment_method?:
+              | "Card"
+              | "Bank account"
+              | "Bank transfer"
+              | "Check"
+              | "Account Current"
+              | "Paypal";
+            payment_type?:
+              | "Stripe"
+              | "Carrier Portal"
+              | "Premium Finance Portal"
+              | "Other"
+              | "Paypal";
             payment_concept?: string;
             endorsement_id?: string;
             related_voided_endorsement_id?: string;
@@ -1044,8 +1175,12 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @secure
      */
     addCertificate: (
-      data: { type: "certificate_of_insurance"; policy_ids: string[]; fields: { holder_name: string } },
-      params: RequestParams = {},
+      data: {
+        type: "certificate_of_insurance";
+        policy_ids: string[];
+        fields: { holder_name: string };
+      },
+      params: RequestParams = {}
     ) =>
       this.request<
         {
@@ -1071,12 +1206,12 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @description Fetch carriers list
      *
      * @tags Catalog
-     * @name CarriersList
+     * @name ListCarriers
      * @summary Fetch carriers list
      * @request GET:/carriers
      * @secure
      */
-    carriersList: (params: RequestParams = {}) =>
+    listCarriers: (params: RequestParams = {}) =>
       this.request<
         { data?: { name?: string; id?: string }[] },
         { errors?: { source?: string; type: string; message: string }[] }
@@ -1093,12 +1228,12 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @description Fetch insurance types list
      *
      * @tags Catalog
-     * @name InsuranceTypesList
+     * @name ListInsuranceTypes
      * @summary Fetch insurance types list
      * @request GET:/insurance_types
      * @secure
      */
-    insuranceTypesList: (params: RequestParams = {}) =>
+    listInsuranceTypes: (params: RequestParams = {}) =>
       this.request<
         { data?: { name?: string; id?: string }[] },
         { errors?: { source?: string; type: string; message: string }[] }
@@ -1115,12 +1250,12 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @description Fetch intermediaries list
      *
      * @tags Catalog
-     * @name IntermediariesList
+     * @name ListIntermediaries
      * @summary Fetch intermediaries list
      * @request GET:/intermediaries
      * @secure
      */
-    intermediariesList: (params: RequestParams = {}) =>
+    listIntermediaries: (params: RequestParams = {}) =>
       this.request<{ data?: { name?: string; id?: string }[] }, any>({
         path: `/intermediaries`,
         method: "GET",
@@ -1154,7 +1289,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
         )[];
         notify_on_error_email?: string;
       },
-      params: RequestParams = {},
+      params: RequestParams = {}
     ) =>
       this.request<
         {
@@ -1171,7 +1306,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
               | "policy.neverCompleted"
             )[];
             notify_on_error_email?: string;
-          } & { application_mode_uuid?: string; signing_key?: string };
+          } & { signing_key?: string };
         },
         { errors?: { source?: string; type: string; message: string }[] }
       >({
@@ -1209,7 +1344,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
               | "policy.neverCompleted"
             )[];
             notify_on_error_email?: string;
-          } & { application_mode_uuid?: string; signing_key?: string })[];
+          } & { signing_key?: string })[];
         },
         any
       >({
@@ -1281,7 +1416,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
         )[];
         notify_on_error_email?: string;
       },
-      params: RequestParams = {},
+      params: RequestParams = {}
     ) =>
       this.request<
         {
@@ -1358,10 +1493,25 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @secure
      */
     addPaymentMethod: (
-      data: { type: "credit_card"; provider: "stripe"; token: string; account_id: string },
-      params: RequestParams = {},
+      data: {
+        type: "credit_card";
+        provider: "stripe";
+        token: string;
+        account_id: string;
+      },
+      params: RequestParams = {}
     ) =>
-      this.request<{ data?: { type: "credit_card"; provider: "stripe"; token: string; account_id: string } }, void>({
+      this.request<
+        {
+          data?: {
+            type: "credit_card";
+            provider: "stripe";
+            token: string;
+            account_id: string;
+          };
+        },
+        void
+      >({
         path: `/payment_methods`,
         method: "POST",
         body: data,
@@ -1371,42 +1521,61 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
         ...params,
       }),
   };
-  quotes = {
+  payments = {
     /**
-     * @description Fetch a quote by external ID
+     * @description Fetch a payment by ID
      *
-     * @tags Quote
-     * @name QuotesList
-     * @summary Fetch a quote
-     * @request GET:/quotes
+     * @tags Payments
+     * @name GetPayment
+     * @summary Fetch a payment
+     * @request GET:/payments/{id}
      * @secure
      */
-    quotesList: (query: { external_id: string }, params: RequestParams = {}) =>
+    getPayment: (id: string, params: RequestParams = {}) =>
       this.request<
         {
-          data?: ({ id: string } & {
+          data?: {
+            id?: string;
+            payment_date?: string;
+            policy_id?: string;
+            status?:
+              | "Succeeded"
+              | "Failed"
+              | "Pending"
+              | "Disputed"
+              | "Billing Approved"
+              | null;
             account_id?: string;
-            insurance_type?: string;
-            policy_ids?: string[];
-            name?: string;
-            stage?: string;
-            premium?: { value?: number; amount: number; currency: string };
-            taxes?: { value?: number; amount: number; currency: string };
-            fees?: { value?: number; amount: number; currency: string };
-            effective_date?: string;
-            expiration_date?: string;
-          })[];
+            amount?: { amount: number; currency: string };
+            payment_method?:
+              | "Card"
+              | "Bank account"
+              | "Bank transfer"
+              | "Check"
+              | "Account Current"
+              | "Paypal";
+            payment_type?:
+              | "Stripe"
+              | "Carrier Portal"
+              | "Premium Finance Portal"
+              | "Other"
+              | "Paypal";
+            payment_concept?: string;
+            endorsement_id?: string;
+            related_voided_endorsement_id?: string;
+            external_id?: string;
+          }[];
         },
-        { errors?: { source?: string; type: string; message: string }[] }
+        any
       >({
-        path: `/quotes`,
+        path: `/payments/${id}`,
         method: "GET",
-        query: query,
         secure: true,
         format: "json",
         ...params,
       }),
-
+  };
+  quotes = {
     /**
      * @description Fetch an existing quote by ID.
      *
@@ -1421,13 +1590,21 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
         {
           data?: ({ id: string } & {
             account_id?: string;
+            external_id?: string;
             insurance_type?: string;
             policy_ids?: string[];
             name?: string;
-            stage?: string;
-            premium?: { value?: number; amount: number; currency: string };
-            taxes?: { value?: number; amount: number; currency: string };
-            fees?: { value?: number; amount: number; currency: string };
+            stage?:
+              | "NON_QUOTED"
+              | "PENDING_CUSTOMER_INFORMATION"
+              | "QUOTED_PENDING_PRODUCER"
+              | "QUOTED_PENDING_APPROVAL"
+              | "QUOTED_AVAILABLE_TO_PURCHASE"
+              | "PURCHASED"
+              | "REJECTED";
+            premium?: { amount: number; currency: string };
+            taxes?: { amount: number; currency: string };
+            fees?: { amount: number; currency: string };
             effective_date?: string;
             expiration_date?: string;
           })[];
@@ -1442,45 +1619,17 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
       }),
 
     /**
-     * @description Update an existing quote. All fields are optional.
+     * @description Partially update an existing quote.
      *
      * @tags Quote
-     * @name UpdateQuote
-     * @summary Update a quote
+     * @name PatchQuote
+     * @summary Partially update a quote
      * @request PATCH:/quotes/{id}
      * @secure
      */
-    updateQuote: (
-      id: string,
-      data: {
-        account_id?: string;
-        insurance_type?: string;
-        policy_ids?: string[];
-        name?: string;
-        stage?: string;
-        premium?: { value?: number; amount: number; currency: string };
-        taxes?: { value?: number; amount: number; currency: string };
-        fees?: { value?: number; amount: number; currency: string };
-        effective_date?: string;
-        expiration_date?: string;
-      },
-      params: RequestParams = {},
-    ) =>
+    patchQuote: (id: string, data: PatchRequest, params: RequestParams = {}) =>
       this.request<
-        {
-          data?: { id: string } & {
-            account_id?: string;
-            insurance_type?: string;
-            policy_ids?: string[];
-            name?: string;
-            stage?: string;
-            premium?: { value?: number; amount: number; currency: string };
-            taxes?: { value?: number; amount: number; currency: string };
-            fees?: { value?: number; amount: number; currency: string };
-            effective_date?: string;
-            expiration_date?: string;
-          };
-        },
+        { data?: { operation_id?: string; status?: "processing" } },
         { errors?: { source?: string; type: string; message: string }[] }
       >({
         path: `/quotes/${id}`,
@@ -1491,18 +1640,62 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
         format: "json",
         ...params,
       }),
+
+    /**
+     * @description Fetch quotes by external ID.
+     *
+     * @tags Quote
+     * @name ListQuotes
+     * @summary Fetch list of quotes
+     * @request GET:/quotes
+     * @secure
+     */
+    listQuotes: (query: { external_id: string }, params: RequestParams = {}) =>
+      this.request<
+        {
+          data?: ({ id: string } & {
+            account_id?: string;
+            external_id?: string;
+            insurance_type?: string;
+            policy_ids?: string[];
+            name?: string;
+            stage?:
+              | "NON_QUOTED"
+              | "PENDING_CUSTOMER_INFORMATION"
+              | "QUOTED_PENDING_PRODUCER"
+              | "QUOTED_PENDING_APPROVAL"
+              | "QUOTED_AVAILABLE_TO_PURCHASE"
+              | "PURCHASED"
+              | "REJECTED";
+            premium?: { amount: number; currency: string };
+            taxes?: { amount: number; currency: string };
+            fees?: { amount: number; currency: string };
+            effective_date?: string;
+            expiration_date?: string;
+          })[];
+        },
+        { errors?: { source?: string; type: string; message: string }[] }
+      >({
+        path: `/quotes`,
+        method: "GET",
+        query: query,
+        secure: true,
+        format: "json",
+        ...params,
+      }),
   };
   endorsements = {
     /**
      * @description Create an endorsement or change in the policy
      *
      * @tags Endorsements
-     * @name EndorsementsCreate
+     * @name CreatePolicyEndorsement
      * @summary Create an endorsement or change in the policy
      * @request POST:/endorsements
+     * @deprecated
      * @secure
      */
-    endorsementsCreate: (
+    createPolicyEndorsement: (
       data: {
         id: string;
         policy_id: string;
@@ -1514,19 +1707,25 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
           | "Approved"
           | "Payment Not Collected"
           | "Not needed"
+          | "Voided"
           | null;
         endorsement_number: string;
-        type_of_change: "Policy Change" | "Cancellation" | "Audit" | "New policy" | "Reinstatement";
+        type_of_change:
+          | "Policy Change"
+          | "Cancellation"
+          | "Audit"
+          | "New policy"
+          | "Reinstatement";
         processed_date: string;
         description: string;
         effective_date: string;
-        premium_change: { value?: number; amount: number; currency: string };
-        taxes_change: { value?: number; amount: number; currency: string };
-        fees_change: { value?: number; amount: number; currency: string };
-        financed_amount?: { value?: number; amount: number; currency: string };
+        premium_change: { amount: number; currency: string };
+        taxes_change: { amount: number; currency: string };
+        fees_change: { amount: number; currency: string };
+        financed_amount?: { amount: number; currency: string };
         correction_of_endorsement_id?: string;
       },
-      params: RequestParams = {},
+      params: RequestParams = {}
     ) =>
       this.request<
         {
@@ -1541,16 +1740,22 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
               | "Approved"
               | "Payment Not Collected"
               | "Not needed"
+              | "Voided"
               | null;
             endorsement_number: string;
-            type_of_change: "Policy Change" | "Cancellation" | "Audit" | "New policy" | "Reinstatement";
+            type_of_change:
+              | "Policy Change"
+              | "Cancellation"
+              | "Audit"
+              | "New policy"
+              | "Reinstatement";
             processed_date: string;
             description: string;
             effective_date: string;
-            premium_change: { value?: number; amount: number; currency: string };
-            taxes_change: { value?: number; amount: number; currency: string };
-            fees_change: { value?: number; amount: number; currency: string };
-            financed_amount?: { value?: number; amount: number; currency: string };
+            premium_change: { amount: number; currency: string };
+            taxes_change: { amount: number; currency: string };
+            fees_change: { amount: number; currency: string };
+            financed_amount?: { amount: number; currency: string };
             correction_of_endorsement_id?: string;
           };
         },
@@ -1569,15 +1774,15 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @description Fetch an endorsement by ID
      *
      * @tags Endorsements
-     * @name EndorsementsDetail
+     * @name GetEndorsement
      * @summary Fetch an endorsement
      * @request GET:/endorsements/{id}
      * @secure
      */
-    endorsementsDetail: (id: string, params: RequestParams = {}) =>
+    getEndorsement: (id: string, params: RequestParams = {}) =>
       this.request<
         {
-          data?: { id: string } & {
+          data?: ({ id: string } & {
             id: string;
             policy_id: string;
             account_id: string;
@@ -1588,18 +1793,24 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
               | "Approved"
               | "Payment Not Collected"
               | "Not needed"
+              | "Voided"
               | null;
             endorsement_number: string;
-            type_of_change: "Policy Change" | "Cancellation" | "Audit" | "New policy" | "Reinstatement";
+            type_of_change:
+              | "Policy Change"
+              | "Cancellation"
+              | "Audit"
+              | "New policy"
+              | "Reinstatement";
             processed_date: string;
             description: string;
             effective_date: string;
-            premium_change: { value?: number; amount: number; currency: string };
-            taxes_change: { value?: number; amount: number; currency: string };
-            fees_change: { value?: number; amount: number; currency: string };
-            financed_amount?: { value?: number; amount: number; currency: string };
+            premium_change: { amount: number; currency: string };
+            taxes_change: { amount: number; currency: string };
+            fees_change: { amount: number; currency: string };
+            financed_amount?: { amount: number; currency: string };
             correction_of_endorsement_id?: string;
-          };
+          })[];
         },
         { errors?: { source?: string; type: string; message: string }[] }
       >({
@@ -1614,21 +1825,21 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @description Fetch the commissions by endorsement ID
      *
      * @tags Comissions
-     * @name CommissionsDetail
+     * @name GetEndorsementCommissions
      * @summary Fetch the commissions applied over an endorsement
      * @request GET:/endorsements/{id}/commissions
      * @secure
      */
-    commissionsDetail: (id: string, params: RequestParams = {}) =>
+    getEndorsementCommissions: (id: string, params: RequestParams = {}) =>
       this.request<
         {
           data?: {
             endorsement_id?: string;
-            amount?: { value?: number; amount: number; currency: string };
+            amount?: { amount: number; currency: string };
             percentage?: number;
-            cw_servicing_fees?: { value?: number; amount: number; currency: string };
-            agency_servicing_fees?: { value?: number; amount: number; currency: string };
-            payment_processing_fees?: { value?: number; amount: number; currency: string };
+            cw_servicing_fees?: { amount: number; currency: string };
+            agency_servicing_fees?: { amount: number; currency: string };
+            payment_processing_fees?: { amount: number; currency: string };
           };
         },
         { errors?: { source?: string; type: string; message: string }[] }
@@ -1644,23 +1855,40 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @description Fetch a list of endorsement payments
      *
      * @tags Endorsements
-     * @name PaymentsDetail
+     * @name ListEndorsementPayments
      * @summary Fetch a list of endorsement payments
      * @request GET:/endorsements/{id}/payments
      * @secure
      */
-    paymentsDetail: (id: string, params: RequestParams = {}) =>
+    listEndorsementPayments: (id: string, params: RequestParams = {}) =>
       this.request<
         {
           data?: {
             id?: string;
             payment_date?: string;
             policy_id?: string;
-            status?: "Succeeded" | "Failed" | "Pending" | "Disputed" | "Billing Approved" | null;
+            status?:
+              | "Succeeded"
+              | "Failed"
+              | "Pending"
+              | "Disputed"
+              | "Billing Approved"
+              | null;
             account_id?: string;
-            amount?: { value?: number; amount: number; currency: string };
-            payment_method?: "Card" | "Bank account" | "Bank transfer" | "Check" | "Account Current" | "Paypal";
-            payment_type?: "Stripe" | "Carrier Portal" | "Premium Finance Portal" | "Other" | "Paypal";
+            amount?: { amount: number; currency: string };
+            payment_method?:
+              | "Card"
+              | "Bank account"
+              | "Bank transfer"
+              | "Check"
+              | "Account Current"
+              | "Paypal";
+            payment_type?:
+              | "Stripe"
+              | "Carrier Portal"
+              | "Premium Finance Portal"
+              | "Other"
+              | "Paypal";
             payment_concept?: string;
             endorsement_id?: string;
             related_voided_endorsement_id?: string;
@@ -1694,9 +1922,12 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
         last_name?: string;
         email?: string;
         communications_opt_out?: "email" | "sms" | "all" | "none";
-        contact_numbers?: { type: "phone" | "extension" | "mobile" | "fax" | "other"; number: string }[];
+        contact_numbers?: {
+          type: "phone" | "extension" | "mobile" | "fax" | "other";
+          number: string;
+        }[];
       },
-      params: RequestParams = {},
+      params: RequestParams = {}
     ) =>
       this.request<
         {
@@ -1707,7 +1938,10 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
             last_name?: string;
             email?: string;
             communications_opt_out?: "email" | "sms" | "all" | "none";
-            contact_numbers?: { type: "phone" | "extension" | "mobile" | "fax" | "other"; number: string }[];
+            contact_numbers?: {
+              type: "phone" | "extension" | "mobile" | "fax" | "other";
+              number: string;
+            }[];
           };
         },
         { errors?: { source?: string; type: string; message: string }[] }
@@ -1739,9 +1973,12 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
         last_name?: string;
         email?: string;
         communications_opt_out?: "email" | "sms" | "all" | "none";
-        contact_numbers?: { type: "phone" | "extension" | "mobile" | "fax" | "other"; number: string }[];
+        contact_numbers?: {
+          type: "phone" | "extension" | "mobile" | "fax" | "other";
+          number: string;
+        }[];
       },
-      params: RequestParams = {},
+      params: RequestParams = {}
     ) =>
       this.request<
         {
@@ -1752,13 +1989,97 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
             last_name?: string;
             email?: string;
             communications_opt_out?: "email" | "sms" | "all" | "none";
-            contact_numbers?: { type: "phone" | "extension" | "mobile" | "fax" | "other"; number: string }[];
+            contact_numbers?: {
+              type: "phone" | "extension" | "mobile" | "fax" | "other";
+              number: string;
+            }[];
           };
         },
         { errors?: { source?: string; type: string; message: string }[] }
       >({
         path: `/contacts/${id}`,
         method: "PATCH",
+        body: data,
+        secure: true,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+  };
+  servicing = {
+    /**
+     * @description Create a new certificate
+     *
+     * @tags Account, Certificates
+     * @name AddAccountDocumentCertificate
+     * @summary Create a new certificate
+     * @request POST:/servicing/accounts/{id}/import_certificates
+     * @deprecated
+     * @secure
+     */
+    addAccountDocumentCertificate: (
+      id: string,
+      data: {
+        operation_id: string;
+        certificate_id: string;
+        document: string;
+        type: string;
+        effective_date: string;
+        expiration_date: string;
+        certificate_holder: {
+          name: string;
+          address: {
+            type?: "mailing" | "billing";
+            address_line: string;
+            city?: string;
+            state?: string;
+            country_code?: string;
+            postal_code?: string;
+          };
+        };
+        request: {
+          request_number: string;
+          internal_request_number: string;
+          delivery_emails: any[];
+        };
+        policies: any[];
+        callback: { url?: string };
+      },
+      params: RequestParams = {}
+    ) =>
+      this.request<
+        {
+          data?: {
+            operation_id: string;
+            certificate_id: string;
+            document: string;
+            type: string;
+            effective_date: string;
+            expiration_date: string;
+            certificate_holder: {
+              name: string;
+              address: {
+                type?: "mailing" | "billing";
+                address_line: string;
+                city?: string;
+                state?: string;
+                country_code?: string;
+                postal_code?: string;
+              };
+            };
+            request: {
+              request_number: string;
+              internal_request_number: string;
+              delivery_emails: any[];
+            };
+            policies: any[];
+            callback: { url?: string };
+          };
+        },
+        { errors?: { source?: string; type: string; message: string }[] }
+      >({
+        path: `/servicing/accounts/${id}/import_certificates`,
+        method: "POST",
         body: data,
         secure: true,
         type: ContentType.Json,
