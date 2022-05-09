@@ -38,7 +38,7 @@
     { "url": "https://public-api.coveriq.info/v1" }
   ],
   "paths": {
-    "/oauth/token": {
+    "/v1/oauth/token": {
       "post": {
         "tags": ["Authentication"],
         "summary": "Get an access token",
@@ -254,7 +254,7 @@
         }
       }
     },
-    "/accounts": {
+    "/v1/accounts": {
       "post": {
         "tags": ["Account"],
         "summary": "Add a new account",
@@ -613,7 +613,7 @@
         }
       }
     },
-    "/accounts/{id}": {
+    "/v1/accounts/{id}": {
       "get": {
         "tags": ["Account"],
         "summary": "Fetch an account",
@@ -1169,7 +1169,7 @@
         }
       }
     },
-    "/accounts/{id}/contacts": {
+    "/v1/accounts/{id}/contacts": {
       "post": {
         "deprecated": true,
         "tags": ["Account"],
@@ -1363,7 +1363,7 @@
         }
       }
     },
-    "/accounts/{id}/servicing": {
+    "/v1/accounts/{id}/servicing": {
       "post": {
         "tags": ["Account"],
         "summary": "Set servicing data",
@@ -1502,7 +1502,7 @@
         }
       }
     },
-    "/policies": {
+    "/v1/policies": {
       "post": {
         "tags": ["Policy"],
         "summary": "Add a new policy",
@@ -2259,7 +2259,7 @@
         }
       }
     },
-    "/policies/{id}": {
+    "/v1/policies/{id}": {
       "get": {
         "tags": ["Policy"],
         "summary": "Fetch a policy",
@@ -2516,7 +2516,7 @@
         }
       }
     },
-    "/policies/{id}/endorsements": {
+    "/v1/policies/{id}/endorsements": {
       "get": {
         "tags": ["Policy"],
         "summary": "Retrieve endorsements of a policy",
@@ -2741,7 +2741,7 @@
         }
       }
     },
-    "/policies/{id}/payments": {
+    "/v1/policies/{id}/payments": {
       "get": {
         "tags": ["Policy"],
         "summary": "Fetch a list of policy payments",
@@ -2870,7 +2870,7 @@
         }
       }
     },
-    "/certificates": {
+    "/v1/certificates": {
       "post": {
         "tags": ["Certificate"],
         "summary": "Add a new certificate",
@@ -2984,7 +2984,7 @@
         }
       }
     },
-    "/carriers": {
+    "/v1/carriers": {
       "get": {
         "tags": ["Catalog"],
         "summary": "Fetch carriers list",
@@ -3063,7 +3063,7 @@
         }
       }
     },
-    "/insurance_types": {
+    "/v1/insurance_types": {
       "get": {
         "tags": ["Catalog"],
         "summary": "Fetch insurance types list",
@@ -3141,7 +3141,7 @@
         }
       }
     },
-    "/intermediaries": {
+    "/v1/intermediaries": {
       "get": {
         "tags": ["Catalog"],
         "summary": "Fetch intermediaries list",
@@ -3187,7 +3187,7 @@
         }
       }
     },
-    "/subscriptions": {
+    "/v1/subscriptions": {
       "post": {
         "tags": ["Subscriptions"],
         "summary": "Add a new subscription",
@@ -6346,7 +6346,7 @@
         }
       }
     },
-    "/subscriptions/{id}/rotate_key": {
+    "/v1/subscriptions/{id}/rotate_key": {
       "put": {
         "tags": ["Subscriptions"],
         "summary": "Rotate signing_key for subscription",
@@ -6467,7 +6467,7 @@
         }
       }
     },
-    "/subscriptions/{id}": {
+    "/v1/subscriptions/{id}": {
       "put": {
         "tags": ["Subscriptions"],
         "summary": "Update subscription",
@@ -6782,7 +6782,7 @@
         }
       }
     },
-    "/payment_methods": {
+    "/v1/payment_methods": {
       "post": {
         "tags": ["Payment methods"],
         "summary": "Add a new payment method",
@@ -6886,7 +6886,7 @@
         }
       }
     },
-    "/payments/{id}": {
+    "/v1/payments/{id}": {
       "get": {
         "tags": ["Payments"],
         "summary": "Fetch a payment",
@@ -7015,7 +7015,7 @@
         }
       }
     },
-    "/quotes/{id}": {
+    "/v1/quotes/{id}": {
       "get": {
         "tags": ["Quote"],
         "summary": "Fetch a quote",
@@ -7429,7 +7429,7 @@
         }
       }
     },
-    "/quotes": {
+    "/v1/quotes": {
       "get": {
         "tags": ["Quote"],
         "summary": "Fetch list of quotes",
@@ -7662,7 +7662,7 @@
         }
       }
     },
-    "/endorsements": {
+    "/v1/endorsements": {
       "post": {
         "deprecated": true,
         "tags": ["Endorsements"],
@@ -8035,7 +8035,7 @@
         }
       }
     },
-    "/endorsements/{id}": {
+    "/v1/endorsements/{id}": {
       "get": {
         "tags": ["Endorsements"],
         "summary": "Fetch an endorsement",
@@ -8266,7 +8266,7 @@
         }
       }
     },
-    "/endorsements/{id}/commissions": {
+    "/v1/endorsements/{id}/commissions": {
       "get": {
         "tags": ["Comissions"],
         "summary": "Fetch the commissions applied over an endorsement",
@@ -8423,7 +8423,7 @@
         }
       }
     },
-    "/endorsements/{id}/payments": {
+    "/v1/endorsements/{id}/payments": {
       "get": {
         "tags": ["Endorsements"],
         "summary": "Fetch a list of endorsement payments",
@@ -8552,7 +8552,7 @@
         }
       }
     },
-    "/contacts": {
+    "/v1/contacts": {
       "post": {
         "tags": ["Contact"],
         "summary": "Add a contact",
@@ -8756,7 +8756,7 @@
         }
       }
     },
-    "/contacts/{id}": {
+    "/v1/contacts/{id}": {
       "patch": {
         "tags": ["Contact"],
         "summary": "Update a contact",
@@ -8966,7 +8966,7 @@
         }
       }
     },
-    "/servicing/accounts/{id}/import_certificates": {
+    "/v1/servicing/accounts/{id}/import_certificates": {
       "post": {
         "deprecated": true,
         "tags": ["Account", "Certificates"],

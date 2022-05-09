@@ -390,14 +390,14 @@ export class HttpClient<SecurityDataType = unknown> {
  * </details>
  */
 export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDataType> {
-  oauth = {
+  v1 = {
     /**
      * @description Exchange your email and password by an access token that can be used to authenticate subsequent requests.
      *
      * @tags Authentication
      * @name GetAccessToken
      * @summary Get an access token
-     * @request POST:/oauth/token
+     * @request POST:/v1/oauth/token
      */
     getAccessToken: (
       data:
@@ -409,22 +409,21 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
         { access_token?: string; token_type?: string; expires_in?: number; scope?: string; created_at?: number },
         { errors?: { source?: string; type: string; message: string }[] }
       >({
-        path: `/oauth/token`,
+        path: `/v1/oauth/token`,
         method: "POST",
         body: data,
         type: ContentType.Json,
         format: "json",
         ...params,
       }),
-  };
-  accounts = {
+
     /**
      * @description Add a new account
      *
      * @tags Account
      * @name AddAccount
      * @summary Add a new account
-     * @request POST:/accounts
+     * @request POST:/v1/accounts
      * @secure
      */
     addAccount: (
@@ -483,7 +482,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
         },
         { errors?: { source?: string; type: string; message: string }[] } | { message?: string }
       >({
-        path: `/accounts`,
+        path: `/v1/accounts`,
         method: "POST",
         body: data,
         secure: true,
@@ -498,7 +497,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @tags Account
      * @name GetAccount
      * @summary Fetch an account
-     * @request GET:/accounts/{id}
+     * @request GET:/v1/accounts/{id}
      * @secure
      */
     getAccount: (id: string, params: RequestParams = {}) =>
@@ -531,7 +530,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
         },
         { errors?: { source?: string; type: string; message: string }[] }
       >({
-        path: `/accounts/${id}`,
+        path: `/v1/accounts/${id}`,
         method: "GET",
         secure: true,
         format: "json",
@@ -544,7 +543,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @tags Account
      * @name UpdateAccount
      * @summary Update an account
-     * @request PATCH:/accounts/{id}
+     * @request PATCH:/v1/accounts/{id}
      * @secure
      */
     updateAccount: (
@@ -604,7 +603,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
         },
         { errors?: { source?: string; type: string; message: string }[] }
       >({
-        path: `/accounts/${id}`,
+        path: `/v1/accounts/${id}`,
         method: "PATCH",
         body: data,
         secure: true,
@@ -619,7 +618,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @tags Account
      * @name DeprecatedAddContact
      * @summary Add a contact. Deprecated in favor of "POST /contacts"
-     * @request POST:/accounts/{id}/contacts
+     * @request POST:/v1/accounts/{id}/contacts
      * @deprecated
      * @secure
      */
@@ -650,7 +649,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
         },
         { errors?: { source?: string; type: string; message: string }[] }
       >({
-        path: `/accounts/${id}/contacts`,
+        path: `/v1/accounts/${id}/contacts`,
         method: "POST",
         body: data,
         secure: true,
@@ -665,7 +664,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @tags Account
      * @name SetServicing
      * @summary Set servicing data
-     * @request POST:/accounts/{id}/servicing
+     * @request POST:/v1/accounts/{id}/servicing
      * @secure
      */
     setServicing: (
@@ -691,7 +690,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
         },
         { errors?: { source?: string; type: string; message: string }[] }
       >({
-        path: `/accounts/${id}/servicing`,
+        path: `/v1/accounts/${id}/servicing`,
         method: "POST",
         body: data,
         secure: true,
@@ -699,15 +698,14 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
         format: "json",
         ...params,
       }),
-  };
-  policies = {
+
     /**
      * @description This endpoints creates a new policy and returns the data of the policy created including the policy_id that needs to be used later for policy updates. The external_id field should be unique
      *
      * @tags Policy
      * @name AddPolicy
      * @summary Add a new policy
-     * @request POST:/policies
+     * @request POST:/v1/policies
      * @secure
      */
     addPolicy: (
@@ -788,7 +786,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
         },
         { errors?: { source?: string; type: string; message: string }[] }
       >({
-        path: `/policies`,
+        path: `/v1/policies`,
         method: "POST",
         body: data,
         secure: true,
@@ -803,7 +801,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @tags Policy
      * @name ListPolicyByExternalId
      * @summary Fetch a policy
-     * @request GET:/policies
+     * @request GET:/v1/policies
      * @secure
      */
     listPolicyByExternalId: (query: { external_id: string }, params: RequestParams = {}) =>
@@ -847,7 +845,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
         },
         { errors?: { source?: string; type: string; message: string }[] }
       >({
-        path: `/policies`,
+        path: `/v1/policies`,
         method: "GET",
         query: query,
         secure: true,
@@ -861,7 +859,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @tags Policy
      * @name GetPolicy
      * @summary Fetch a policy
-     * @request GET:/policies/{id}
+     * @request GET:/v1/policies/{id}
      * @secure
      */
     getPolicy: (id: string, params: RequestParams = {}) =>
@@ -905,7 +903,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
         },
         { errors?: { source?: string; type: string; message: string }[] }
       >({
-        path: `/policies/${id}`,
+        path: `/v1/policies/${id}`,
         method: "GET",
         secure: true,
         format: "json",
@@ -916,12 +914,12 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @description Retrieve endorsements of a policy
      *
      * @tags Policy
-     * @name EndorsementsDetail
+     * @name PoliciesEndorsementsDetail
      * @summary Retrieve endorsements of a policy
-     * @request GET:/policies/{id}/endorsements
+     * @request GET:/v1/policies/{id}/endorsements
      * @secure
      */
-    endorsementsDetail: (id: string, params: RequestParams = {}) =>
+    policiesEndorsementsDetail: (id: string, params: RequestParams = {}) =>
       this.request<
         {
           data?: { id: string } & {
@@ -951,7 +949,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
         },
         { errors?: { source?: string; type: string; message: string }[] }
       >({
-        path: `/policies/${id}/endorsements`,
+        path: `/v1/policies/${id}/endorsements`,
         method: "GET",
         secure: true,
         format: "json",
@@ -964,7 +962,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @tags Policy
      * @name ListPolicyPayments
      * @summary Fetch a list of policy payments
-     * @request GET:/policies/{id}/payments
+     * @request GET:/v1/policies/{id}/payments
      * @secure
      */
     listPolicyPayments: (id: string, params: RequestParams = {}) =>
@@ -987,21 +985,20 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
         },
         any
       >({
-        path: `/policies/${id}/payments`,
+        path: `/v1/policies/${id}/payments`,
         method: "GET",
         secure: true,
         format: "json",
         ...params,
       }),
-  };
-  certificates = {
+
     /**
      * @description Add a new certificate
      *
      * @tags Certificate
      * @name AddCertificate
      * @summary Add a new certificate
-     * @request POST:/certificates
+     * @request POST:/v1/certificates
      * @secure
      */
     addCertificate: (
@@ -1018,7 +1015,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
         },
         void
       >({
-        path: `/certificates`,
+        path: `/v1/certificates`,
         method: "POST",
         body: data,
         secure: true,
@@ -1026,15 +1023,14 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
         format: "json",
         ...params,
       }),
-  };
-  carriers = {
+
     /**
      * @description Fetch carriers list
      *
      * @tags Catalog
      * @name ListCarriers
      * @summary Fetch carriers list
-     * @request GET:/carriers
+     * @request GET:/v1/carriers
      * @secure
      */
     listCarriers: (params: RequestParams = {}) =>
@@ -1042,21 +1038,20 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
         { data?: { name?: string; id?: string }[] },
         { errors?: { source?: string; type: string; message: string }[] }
       >({
-        path: `/carriers`,
+        path: `/v1/carriers`,
         method: "GET",
         secure: true,
         format: "json",
         ...params,
       }),
-  };
-  insuranceTypes = {
+
     /**
      * @description Fetch insurance types list
      *
      * @tags Catalog
      * @name ListInsuranceTypes
      * @summary Fetch insurance types list
-     * @request GET:/insurance_types
+     * @request GET:/v1/insurance_types
      * @secure
      */
     listInsuranceTypes: (params: RequestParams = {}) =>
@@ -1064,40 +1059,38 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
         { data?: { name?: string; id?: string }[] },
         { errors?: { source?: string; type: string; message: string }[] }
       >({
-        path: `/insurance_types`,
+        path: `/v1/insurance_types`,
         method: "GET",
         secure: true,
         format: "json",
         ...params,
       }),
-  };
-  intermediaries = {
+
     /**
      * @description Fetch intermediaries list
      *
      * @tags Catalog
      * @name ListIntermediaries
      * @summary Fetch intermediaries list
-     * @request GET:/intermediaries
+     * @request GET:/v1/intermediaries
      * @secure
      */
     listIntermediaries: (params: RequestParams = {}) =>
       this.request<{ data?: { name?: string; id?: string }[] }, any>({
-        path: `/intermediaries`,
+        path: `/v1/intermediaries`,
         method: "GET",
         secure: true,
         format: "json",
         ...params,
       }),
-  };
-  subscriptions = {
+
     /**
      * @description Add a new subscription
      *
      * @tags Subscriptions
      * @name AddSubscription
      * @summary Add a new subscription
-     * @request POST:/subscriptions
+     * @request POST:/v1/subscriptions
      * @secure
      */
     addSubscription: (
@@ -1136,7 +1129,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
         },
         { errors?: { source?: string; type: string; message: string }[] }
       >({
-        path: `/subscriptions`,
+        path: `/v1/subscriptions`,
         method: "POST",
         body: data,
         secure: true,
@@ -1151,7 +1144,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @tags Subscriptions
      * @name ListSubscriptions
      * @summary List all subscriptions
-     * @request GET:/subscriptions
+     * @request GET:/v1/subscriptions
      * @secure
      */
     listSubscriptions: (params: RequestParams = {}) =>
@@ -1174,7 +1167,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
         },
         any
       >({
-        path: `/subscriptions`,
+        path: `/v1/subscriptions`,
         method: "GET",
         secure: true,
         format: "json",
@@ -1187,7 +1180,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @tags Subscriptions
      * @name RotateSigningKey
      * @summary Rotate signing_key for subscription
-     * @request PUT:/subscriptions/{id}/rotate_key
+     * @request PUT:/v1/subscriptions/{id}/rotate_key
      * @secure
      */
     rotateSigningKey: (id: string, params: RequestParams = {}) =>
@@ -1210,7 +1203,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
         },
         { errors?: { source?: string; type: string; message: string }[] }
       >({
-        path: `/subscriptions/${id}/rotate_key`,
+        path: `/v1/subscriptions/${id}/rotate_key`,
         method: "PUT",
         secure: true,
         format: "json",
@@ -1223,7 +1216,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @tags Subscriptions
      * @name UpdateSubscription
      * @summary Update subscription
-     * @request PUT:/subscriptions/{id}
+     * @request PUT:/v1/subscriptions/{id}
      * @secure
      */
     updateSubscription: (
@@ -1263,7 +1256,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
         },
         { errors?: { source?: string; type: string; message: string }[] }
       >({
-        path: `/subscriptions/${id}`,
+        path: `/v1/subscriptions/${id}`,
         method: "PUT",
         body: data,
         secure: true,
@@ -1278,7 +1271,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @tags Subscriptions
      * @name DeleteSubscription
      * @summary Delete subscription
-     * @request DELETE:/subscriptions/{id}
+     * @request DELETE:/v1/subscriptions/{id}
      * @secure
      */
     deleteSubscription: (id: string, params: RequestParams = {}) =>
@@ -1301,21 +1294,20 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
         },
         { errors?: { source?: string; type: string; message: string }[] }
       >({
-        path: `/subscriptions/${id}`,
+        path: `/v1/subscriptions/${id}`,
         method: "DELETE",
         secure: true,
         format: "json",
         ...params,
       }),
-  };
-  paymentMethods = {
+
     /**
      * @description Add a new payment method
      *
      * @tags Payment methods
      * @name AddPaymentMethod
      * @summary Add a new payment method
-     * @request POST:/payment_methods
+     * @request POST:/v1/payment_methods
      * @secure
      */
     addPaymentMethod: (
@@ -1323,7 +1315,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
       params: RequestParams = {},
     ) =>
       this.request<{ data?: { type: "credit_card"; provider: "stripe"; token: string; account_id: string } }, void>({
-        path: `/payment_methods`,
+        path: `/v1/payment_methods`,
         method: "POST",
         body: data,
         secure: true,
@@ -1331,15 +1323,14 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
         format: "json",
         ...params,
       }),
-  };
-  payments = {
+
     /**
      * @description Fetch a payment by ID
      *
      * @tags Payments
      * @name GetPayment
      * @summary Fetch a payment
-     * @request GET:/payments/{id}
+     * @request GET:/v1/payments/{id}
      * @secure
      */
     getPayment: (id: string, params: RequestParams = {}) =>
@@ -1362,21 +1353,20 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
         },
         any
       >({
-        path: `/payments/${id}`,
+        path: `/v1/payments/${id}`,
         method: "GET",
         secure: true,
         format: "json",
         ...params,
       }),
-  };
-  quotes = {
+
     /**
      * @description Fetch an existing quote by ID.
      *
      * @tags Quote
      * @name GetQuote
      * @summary Fetch a quote
-     * @request GET:/quotes/{id}
+     * @request GET:/v1/quotes/{id}
      * @secure
      */
     getQuote: (id: string, params: RequestParams = {}) =>
@@ -1405,7 +1395,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
         },
         { errors?: { source?: string; type: string; message: string }[] }
       >({
-        path: `/quotes/${id}`,
+        path: `/v1/quotes/${id}`,
         method: "GET",
         secure: true,
         format: "json",
@@ -1418,7 +1408,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @tags Quote
      * @name PatchQuote
      * @summary Partially update a quote
-     * @request PATCH:/quotes/{id}
+     * @request PATCH:/v1/quotes/{id}
      * @secure
      */
     patchQuote: (id: string, data: PatchRequest, params: RequestParams = {}) =>
@@ -1426,7 +1416,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
         { data?: { operation_id?: string; status?: "processing" } },
         { errors?: { source?: string; type: string; message: string }[] }
       >({
-        path: `/quotes/${id}`,
+        path: `/v1/quotes/${id}`,
         method: "PATCH",
         body: data,
         secure: true,
@@ -1441,7 +1431,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @tags Quote
      * @name ListQuotes
      * @summary Fetch list of quotes
-     * @request GET:/quotes
+     * @request GET:/v1/quotes
      * @secure
      */
     listQuotes: (query: { external_id: string }, params: RequestParams = {}) =>
@@ -1470,22 +1460,21 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
         },
         { errors?: { source?: string; type: string; message: string }[] }
       >({
-        path: `/quotes`,
+        path: `/v1/quotes`,
         method: "GET",
         query: query,
         secure: true,
         format: "json",
         ...params,
       }),
-  };
-  endorsements = {
+
     /**
      * @description Create an endorsement or change in the policy
      *
      * @tags Endorsements
      * @name CreatePolicyEndorsement
      * @summary Create an endorsement or change in the policy
-     * @request POST:/endorsements
+     * @request POST:/v1/endorsements
      * @deprecated
      * @secure
      */
@@ -1545,7 +1534,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
         },
         { errors?: { source?: string; type: string; message: string }[] }
       >({
-        path: `/endorsements`,
+        path: `/v1/endorsements`,
         method: "POST",
         body: data,
         secure: true,
@@ -1560,7 +1549,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @tags Endorsements
      * @name GetEndorsement
      * @summary Fetch an endorsement
-     * @request GET:/endorsements/{id}
+     * @request GET:/v1/endorsements/{id}
      * @secure
      */
     getEndorsement: (id: string, params: RequestParams = {}) =>
@@ -1593,7 +1582,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
         },
         { errors?: { source?: string; type: string; message: string }[] }
       >({
-        path: `/endorsements/${id}`,
+        path: `/v1/endorsements/${id}`,
         method: "GET",
         secure: true,
         format: "json",
@@ -1606,7 +1595,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @tags Comissions
      * @name GetEndorsementCommissions
      * @summary Fetch the commissions applied over an endorsement
-     * @request GET:/endorsements/{id}/commissions
+     * @request GET:/v1/endorsements/{id}/commissions
      * @secure
      */
     getEndorsementCommissions: (id: string, params: RequestParams = {}) =>
@@ -1623,7 +1612,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
         },
         { errors?: { source?: string; type: string; message: string }[] }
       >({
-        path: `/endorsements/${id}/commissions`,
+        path: `/v1/endorsements/${id}/commissions`,
         method: "GET",
         secure: true,
         format: "json",
@@ -1636,7 +1625,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @tags Endorsements
      * @name ListEndorsementPayments
      * @summary Fetch a list of endorsement payments
-     * @request GET:/endorsements/{id}/payments
+     * @request GET:/v1/endorsements/{id}/payments
      * @secure
      */
     listEndorsementPayments: (id: string, params: RequestParams = {}) =>
@@ -1659,21 +1648,20 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
         },
         any
       >({
-        path: `/endorsements/${id}/payments`,
+        path: `/v1/endorsements/${id}/payments`,
         method: "GET",
         secure: true,
         format: "json",
         ...params,
       }),
-  };
-  contacts = {
+
     /**
      * @description Add a contact
      *
      * @tags Contact
      * @name AddContact
      * @summary Add a contact
-     * @request POST:/contacts
+     * @request POST:/v1/contacts
      * @secure
      */
     addContact: (
@@ -1702,7 +1690,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
         },
         { errors?: { source?: string; type: string; message: string }[] }
       >({
-        path: `/contacts`,
+        path: `/v1/contacts`,
         method: "POST",
         body: data,
         secure: true,
@@ -1717,7 +1705,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @tags Contact
      * @name UpdateContact
      * @summary Update a contact
-     * @request PATCH:/contacts/{id}
+     * @request PATCH:/v1/contacts/{id}
      * @secure
      */
     updateContact: (
@@ -1747,7 +1735,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
         },
         { errors?: { source?: string; type: string; message: string }[] }
       >({
-        path: `/contacts/${id}`,
+        path: `/v1/contacts/${id}`,
         method: "PATCH",
         body: data,
         secure: true,
@@ -1755,15 +1743,14 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
         format: "json",
         ...params,
       }),
-  };
-  servicing = {
+
     /**
      * @description Create a new certificate
      *
      * @tags Account, Certificates
      * @name AddAccountDocumentCertificate
      * @summary Create a new certificate
-     * @request POST:/servicing/accounts/{id}/import_certificates
+     * @request POST:/v1/servicing/accounts/{id}/import_certificates
      * @deprecated
      * @secure
      */
@@ -1832,7 +1819,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
         },
         { errors?: { source?: string; type: string; message: string }[] }
       >({
-        path: `/servicing/accounts/${id}/import_certificates`,
+        path: `/v1/servicing/accounts/${id}/import_certificates`,
         method: "POST",
         body: data,
         secure: true,
