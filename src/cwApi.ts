@@ -493,6 +493,53 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
       }),
 
     /**
+     * @description Fetch an account by external ID
+     *
+     * @tags Account
+     * @name ListAccountByExternalId
+     * @summary Fetch an account
+     * @request GET:/accounts
+     * @secure
+     */
+    listAccountByExternalId: (query: { external_id: string }, params: RequestParams = {}) =>
+      this.request<
+        {
+          data?: ({ id: string } & {
+            external_id?: string;
+            business_information?: {
+              name: string;
+              type?: string;
+              website?: string;
+              identification_number?: string;
+              year_established?: number;
+              annual_revenue?: { amount: number; currency: string };
+              fulltime_employees?: number;
+              parttime_employees?: number;
+            };
+            industry?: { type?: "sic" | "naics" | "naf" | "anzsic"; class_code?: string; subclass_code?: string };
+            addresses?: {
+              type?: "mailing" | "billing";
+              address_line: string;
+              city?: string;
+              state?: string;
+              country_code?: string;
+              postal_code?: string;
+            }[];
+            email?: string;
+            phone_number?: string;
+          })[];
+        },
+        { errors?: { source?: string; type: string; message: string }[] }
+      >({
+        path: `/accounts`,
+        method: "GET",
+        query: query,
+        secure: true,
+        format: "json",
+        ...params,
+      }),
+
+    /**
      * @description Fetch an existing account by ID.
      *
      * @tags Account

@@ -611,6 +611,215 @@
             }
           }
         }
+      },
+      "get": {
+        "tags": ["Account"],
+        "summary": "Fetch an account",
+        "description": "Fetch an account by external ID",
+        "operationId": "list_account_by_external_id",
+        "security": [{ "oauth2": ["admin:account"] }],
+        "parameters": [
+          {
+            "name": "external_id",
+            "in": "query",
+            "type": "string",
+            "description": "The external ID of the account you are looking for",
+            "required": true
+          }
+        ],
+        "produces": ["application/json"],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "allOf": [
+                          {
+                            "type": "object",
+                            "properties": {
+                              "id": { "type": "string", "format": "uuid" }
+                            },
+                            "required": ["id"]
+                          },
+                          {
+                            "type": "object",
+                            "properties": {
+                              "external_id": {
+                                "type": "string",
+                                "example": "684365684_2020",
+                                "description": "Account ID"
+                              },
+                              "business_information": {
+                                "type": "object",
+                                "properties": {
+                                  "name": {
+                                    "type": "string",
+                                    "example": "My Business Name"
+                                  },
+                                  "type": {
+                                    "type": "string",
+                                    "example": "Individual",
+                                    "description": "Type of company:\n  * May be one of the following: Individual, Corporation, LLC, LP, etc\n"
+                                  },
+                                  "website": {
+                                    "type": "string",
+                                    "example": "www.mybusiness.com"
+                                  },
+                                  "identification_number": {
+                                    "type": "string",
+                                    "example": "1213453-X"
+                                  },
+                                  "year_established": {
+                                    "type": "number",
+                                    "format": "int32",
+                                    "example": 2020
+                                  },
+                                  "annual_revenue": {
+                                    "type": "object",
+                                    "properties": {
+                                      "amount": {
+                                        "type": "number",
+                                        "description": "Amount expressed in cents. For example 100.00 has to be input as 10000",
+                                        "format": "int32",
+                                        "example": 9995
+                                      },
+                                      "currency": {
+                                        "type": "string",
+                                        "description": "3 letter currency code as defined by ISO-4217",
+                                        "format": "iso-4217",
+                                        "example": "USD"
+                                      }
+                                    },
+                                    "required": ["amount", "currency"]
+                                  },
+                                  "fulltime_employees": {
+                                    "type": "integer",
+                                    "format": "int32",
+                                    "example": 5
+                                  },
+                                  "parttime_employees": {
+                                    "type": "integer",
+                                    "format": "int32",
+                                    "example": 10
+                                  }
+                                },
+                                "required": ["name"]
+                              },
+                              "industry": {
+                                "type": "object",
+                                "properties": {
+                                  "type": {
+                                    "type": "string",
+                                    "enum": ["sic", "naics", "naf", "anzsic"],
+                                    "description": "Industry classification system"
+                                  },
+                                  "class_code": {
+                                    "type": "string",
+                                    "example": "cc1",
+                                    "description": "Class Code of the industry"
+                                  },
+                                  "subclass_code": {
+                                    "type": "string",
+                                    "example": "scc1",
+                                    "description": "Subclass Code of the industry"
+                                  }
+                                }
+                              },
+                              "addresses": {
+                                "type": "array",
+                                "items": {
+                                  "type": "object",
+                                  "properties": {
+                                    "type": {
+                                      "type": "string",
+                                      "default": "billing",
+                                      "enum": ["mailing", "billing"]
+                                    },
+                                    "address_line": {
+                                      "type": "string",
+                                      "description": "Street number and street name",
+                                      "example": "935 Madison Ave"
+                                    },
+                                    "city": {
+                                      "type": "string",
+                                      "example": "New York"
+                                    },
+                                    "state": {
+                                      "type": "string",
+                                      "example": "NY"
+                                    },
+                                    "country_code": {
+                                      "type": "string",
+                                      "description": "Country code component of an address\n  * Must be a valid ISO 3166-1 Alpha-2 country code\n",
+                                      "example": "US"
+                                    },
+                                    "postal_code": {
+                                      "type": "string",
+                                      "description": "Postcode or ZIP code of an address",
+                                      "example": "10065"
+                                    }
+                                  },
+                                  "required": ["address_line"]
+                                }
+                              },
+                              "email": {
+                                "type": "string",
+                                "example": "sample_mail@mail.com",
+                                "format": "email"
+                              },
+                              "phone_number": {
+                                "type": "string",
+                                "example": "+61285993444",
+                                "description": "Account main phone number:\n  * May have up to 17 characters including special ones\n  * May have blocks separated by dashes or blank spaces\n  * May include a block surrounded by parentheses\n  * May include country code\n  * There cannot be two consecutive spaces or dashes\n  * There cannot be more than one block surrounded by parentheses\n"
+                              }
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The data provided is not valid",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "source": {
+                            "type": "string",
+                            "description": "Field, method, or service that originates the error"
+                          },
+                          "type": {
+                            "type": "string",
+                            "description": "Type of error. Should include a value defined in the catalog of errors"
+                          },
+                          "message": {
+                            "type": "string",
+                            "description": "Message that gives additional information about the error"
+                          }
+                        },
+                        "required": ["type", "message"]
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
       }
     },
     "/accounts/{id}": {
