@@ -178,7 +178,7 @@ export type Quote = { id: string } & {
 
 export interface CertificateSyncronization {
   certificate: {
-    id: string;
+    external_id: string;
     document: string;
     effective_date: string;
     expiration_date: string;
@@ -1818,7 +1818,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
       id: string,
       data: {
         certificate: {
-          id: string;
+          external_id: string;
           document: string;
           effective_date: string;
           expiration_date: string;
@@ -1850,7 +1850,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
         {
           data?: {
             certificate: {
-              id: string;
+              external_id: string;
               document: string;
               effective_date: string;
               expiration_date: string;
