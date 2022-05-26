@@ -62,6 +62,37 @@ export type Account = { id: string } & {
   phone_number?: string;
 };
 
+export interface ServicingAccount {
+  business_information: { name: string };
+  addresses: {
+    type?: "mailing" | "billing";
+    address_line: string;
+    city?: string;
+    state?: string;
+    country_code?: string;
+    postal_code?: string;
+  }[];
+
+  /**
+   * @format email
+   * @example sample_mail@mail.com
+   */
+  email: string;
+
+  /**
+   * Account main phone number:
+   *   * May have up to 17 characters including special ones
+   *   * May have blocks separated by dashes or blank spaces
+   *   * May include a block surrounded by parentheses
+   *   * May include country code
+   *   * There cannot be two consecutive spaces or dashes
+   *   * There cannot be more than one block surrounded by parentheses
+   *
+   * @example +61285993444
+   */
+  phone_number: string;
+}
+
 export type Commission = { id: string } & {
   endorsement_id?: string;
   amount?: { amount: number; currency: string };
@@ -105,6 +136,36 @@ export type Endorsement = { id: string } & {
   financed_amount?: { amount: number; currency: string };
   correction_of_endorsement_id?: string;
 };
+
+export interface ServicingEndorsement {
+  /** @example <p>added policy document to related files in new policy endorsement</p> */
+  description: string;
+
+  /**
+   * @format data
+   * @example 2017-02-21
+   */
+  effective_date: string;
+  premium_change: { amount: number; currency: string };
+  taxes_change: { amount: number; currency: string };
+  fees_change: {
+    carrier?: { amount: number; currency: string };
+    agency?: { amount: number; currency: string };
+    external_agency?: { amount: number; currency: string };
+  };
+  status:
+    | "Not started"
+    | "Pending payment"
+    | "Under review"
+    | "Approved"
+    | "Payment Not Collected"
+    | "Not needed"
+    | "Voided"
+    | null;
+
+  /** @example true */
+  pending_action: boolean;
+}
 
 export type InsuranceType = { id: string } & { name?: string; id?: string };
 
@@ -213,6 +274,26 @@ export type PatchRequest = {
   value?: object;
   from?: string;
 }[];
+
+export interface AgentRequest {
+  /** Account id to identify the account */
+  account_id: string;
+
+  /** Type of agent request */
+  type: "CERTIFICATE" | "MONEY_COLLECTION";
+
+  /**
+   * Subject for the agent request
+   * @example Error importing certificates from Bridge with request id 123243253
+   */
+  subject: string;
+
+  /**
+   * Long description for the agent request
+   * @example fix certificate 8745268231 failed due to data validation error
+   */
+  description: string;
+}
 
 import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse, ResponseType } from "axios";
 
@@ -1846,40 +1927,218 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
       },
       params: RequestParams = {},
     ) =>
+      this.request<{ process: { id: string } }, { errors?: { source?: string; type: string; message: string }[] }>({
+        path: `/servicing/accounts/${id}/import_certificates`,
+        method: "POST",
+        body: data,
+        secure: true,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Apply account changes to an existing policy
+     *
+     * @tags Servicing
+     * @name ApplyAccountChanges
+     * @summary Apply account changes to an existing policy
+     * @request POST:/servicing/accounts/{id}/account_changes
+     * @secure
+     */
+    applyAccountChanges: (
+      id: string,
+      data: {
+        business_information: { name: string };
+        addresses: {
+          type?: "mailing" | "billing";
+          address_line: string;
+          city?: string;
+          state?: string;
+          country_code?: string;
+          postal_code?: string;
+        }[];
+        email: string;
+        phone_number: string;
+      },
+      params: RequestParams = {},
+    ) =>
+      this.request<
+        { success?: boolean },
+        { errors?: { source?: string; type: string; message: string }[] } | { message?: string }
+      >({
+        path: `/servicing/accounts/${id}/account_changes`,
+        method: "POST",
+        body: data,
+        secure: true,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Apply midterm changes to an existing policy
+     *
+     * @tags Servicing
+     * @name ApplyMidtermChanges
+     * @summary Apply midterm changes to an existing policy
+     * @request POST:/servicing/policies/{id}/midterm_changes
+     * @secure
+     */
+    applyMidtermChanges: (
+      id: string,
+      data: {
+        description: string;
+        effective_date: string;
+        premium_change: { amount: number; currency: string };
+        taxes_change: { amount: number; currency: string };
+        fees_change: {
+          carrier?: { amount: number; currency: string };
+          agency?: { amount: number; currency: string };
+          external_agency?: { amount: number; currency: string };
+        };
+        status:
+          | "Not started"
+          | "Pending payment"
+          | "Under review"
+          | "Approved"
+          | "Payment Not Collected"
+          | "Not needed"
+          | "Voided"
+          | null;
+        pending_action: boolean;
+      } & { professional_liability: { occurrence_limit?: number; aggregate_limit?: number } },
+      params: RequestParams = {},
+    ) =>
+      this.request<
+        { success?: boolean },
+        { errors?: { source?: string; type: string; message: string }[] } | { message?: string }
+      >({
+        path: `/servicing/policies/${id}/midterm_changes`,
+        method: "POST",
+        body: data,
+        secure: true,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Apply cancellation to an existing policy
+     *
+     * @tags Servicing
+     * @name ApplyCancellation
+     * @summary Apply cancellation to an existing policy
+     * @request POST:/servicing/policies/{id}/cancellation
+     * @secure
+     */
+    applyCancellation: (
+      id: string,
+      data: {
+        description: string;
+        effective_date: string;
+        premium_change: { amount: number; currency: string };
+        taxes_change: { amount: number; currency: string };
+        fees_change: {
+          carrier?: { amount: number; currency: string };
+          agency?: { amount: number; currency: string };
+          external_agency?: { amount: number; currency: string };
+        };
+        status:
+          | "Not started"
+          | "Pending payment"
+          | "Under review"
+          | "Approved"
+          | "Payment Not Collected"
+          | "Not needed"
+          | "Voided"
+          | null;
+        pending_action: boolean;
+      },
+      params: RequestParams = {},
+    ) =>
+      this.request<
+        { success?: boolean },
+        { errors?: { source?: string; type: string; message: string }[] } | { message?: string }
+      >({
+        path: `/servicing/policies/${id}/cancellation`,
+        method: "POST",
+        body: data,
+        secure: true,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Apply reinstatement to an existing policy
+     *
+     * @tags Servicing
+     * @name ApplyReinstatement
+     * @summary Apply reinstatement to an existing policy
+     * @request POST:/servicing/policies/{id}/reinstatement
+     * @secure
+     */
+    applyReinstatement: (
+      id: string,
+      data: {
+        description: string;
+        effective_date: string;
+        premium_change: { amount: number; currency: string };
+        taxes_change: { amount: number; currency: string };
+        fees_change: {
+          carrier?: { amount: number; currency: string };
+          agency?: { amount: number; currency: string };
+          external_agency?: { amount: number; currency: string };
+        };
+        status:
+          | "Not started"
+          | "Pending payment"
+          | "Under review"
+          | "Approved"
+          | "Payment Not Collected"
+          | "Not needed"
+          | "Voided"
+          | null;
+        pending_action: boolean;
+      },
+      params: RequestParams = {},
+    ) =>
+      this.request<
+        { success?: boolean },
+        { errors?: { source?: string; type: string; message: string }[] } | { message?: string }
+      >({
+        path: `/servicing/policies/${id}/reinstatement`,
+        method: "POST",
+        body: data,
+        secure: true,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+  };
+  requests = {
+    /**
+     * @description Create agent request
+     *
+     * @tags Agent request
+     * @name CreateRequest
+     * @summary Create agent request
+     * @request POST:/requests
+     * @deprecated
+     * @secure
+     */
+    createRequest: (
+      data: { account_id: string; type: "CERTIFICATE" | "MONEY_COLLECTION"; subject: string; description: string },
+      params: RequestParams = {},
+    ) =>
       this.request<
         {
-          data?: {
-            certificate: {
-              external_id: string;
-              document: string;
-              effective_date: string;
-              expiration_date: string;
-              certificate_holder: {
-                name: string;
-                address: {
-                  type?: "mailing" | "billing";
-                  address_line: string;
-                  city?: string;
-                  state?: string;
-                  country_code?: string;
-                  postal_code?: string;
-                };
-              };
-            };
-            request: {
-              external_id: string;
-              internal_id?: string;
-              size: number;
-              type: "ADHOC" | "RENEWAL";
-              delivery_emails: any[];
-            };
-            policies: any[];
-            callback?: { url?: string };
-          };
+          data?: { account_id: string; type: "CERTIFICATE" | "MONEY_COLLECTION"; subject: string; description: string };
         },
         { errors?: { source?: string; type: string; message: string }[] }
       >({
-        path: `/servicing/accounts/${id}/import_certificates`,
+        path: `/requests`,
         method: "POST",
         body: data,
         secure: true,
