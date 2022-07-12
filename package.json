@@ -1,6 +1,6 @@
 {
   "name": "cw-public-api",
-  "version": "1.3.1",
+  "version": "1.3.2",
   "description": "Auto generate typescript interfaces and http client from swagger spec",
   "main": "./dist/cwApi.js",
   "types": "./dist/cwApi.d.ts",
