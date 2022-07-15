@@ -42,12 +42,12 @@ export type Account = { id: string } & {
   };
   industry?: { type?: "sic" | "naics" | "naf" | "anzsic"; class_code?: string; subclass_code?: string };
   addresses?: {
-    type: "mailing" | "billing";
+    type?: "mailing" | "billing";
     address_line: string;
-    city: string;
-    state: string;
-    country_code: string;
-    postal_code: string;
+    city?: string;
+    state?: string;
+    country_code?: string;
+    postal_code?: string;
   }[];
   email?: string;
   phone_number?: string;
@@ -56,12 +56,12 @@ export type Account = { id: string } & {
 export interface ServicingAccount {
   business_information?: { name: string };
   addresses?: {
-    type: "mailing" | "billing";
+    type?: "mailing" | "billing";
     address_line: string;
-    city: string;
-    state: string;
-    country_code: string;
-    postal_code: string;
+    city?: string;
+    state?: string;
+    country_code?: string;
+    postal_code?: string;
   }[];
 
   /**
@@ -239,12 +239,12 @@ export interface CertificateSyncronization {
     certificate_holder: {
       name: string;
       address: {
-        type: "mailing" | "billing";
+        type?: "mailing" | "billing";
         address_line: string;
-        city: string;
-        state: string;
-        country_code: string;
-        postal_code: string;
+        city?: string;
+        state?: string;
+        country_code?: string;
+        postal_code?: string;
       };
     };
   };
@@ -530,12 +530,12 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
         };
         industry?: { type?: "sic" | "naics" | "naf" | "anzsic"; class_code?: string; subclass_code?: string };
         addresses?: {
-          type: "mailing" | "billing";
+          type?: "mailing" | "billing";
           address_line: string;
-          city: string;
-          state: string;
-          country_code: string;
-          postal_code: string;
+          city?: string;
+          state?: string;
+          country_code?: string;
+          postal_code?: string;
         }[];
         email?: string;
         phone_number?: string;
@@ -558,12 +558,12 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
             };
             industry?: { type?: "sic" | "naics" | "naf" | "anzsic"; class_code?: string; subclass_code?: string };
             addresses?: {
-              type: "mailing" | "billing";
+              type?: "mailing" | "billing";
               address_line: string;
-              city: string;
-              state: string;
-              country_code: string;
-              postal_code: string;
+              city?: string;
+              state?: string;
+              country_code?: string;
+              postal_code?: string;
             }[];
             email?: string;
             phone_number?: string;
@@ -606,12 +606,12 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
             };
             industry?: { type?: "sic" | "naics" | "naf" | "anzsic"; class_code?: string; subclass_code?: string };
             addresses?: {
-              type: "mailing" | "billing";
+              type?: "mailing" | "billing";
               address_line: string;
-              city: string;
-              state: string;
-              country_code: string;
-              postal_code: string;
+              city?: string;
+              state?: string;
+              country_code?: string;
+              postal_code?: string;
             }[];
             email?: string;
             phone_number?: string;
@@ -653,12 +653,12 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
             };
             industry?: { type?: "sic" | "naics" | "naf" | "anzsic"; class_code?: string; subclass_code?: string };
             addresses?: {
-              type: "mailing" | "billing";
+              type?: "mailing" | "billing";
               address_line: string;
-              city: string;
-              state: string;
-              country_code: string;
-              postal_code: string;
+              city?: string;
+              state?: string;
+              country_code?: string;
+              postal_code?: string;
             }[];
             email?: string;
             phone_number?: string;
@@ -698,12 +698,12 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
         };
         industry?: { type?: "sic" | "naics" | "naf" | "anzsic"; class_code?: string; subclass_code?: string };
         addresses?: {
-          type: "mailing" | "billing";
+          type?: "mailing" | "billing";
           address_line: string;
-          city: string;
-          state: string;
-          country_code: string;
-          postal_code: string;
+          city?: string;
+          state?: string;
+          country_code?: string;
+          postal_code?: string;
         }[];
         email?: string;
         phone_number?: string;
@@ -726,12 +726,12 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
             };
             industry?: { type?: "sic" | "naics" | "naf" | "anzsic"; class_code?: string; subclass_code?: string };
             addresses?: {
-              type: "mailing" | "billing";
+              type?: "mailing" | "billing";
               address_line: string;
-              city: string;
-              state: string;
-              country_code: string;
-              postal_code: string;
+              city?: string;
+              state?: string;
+              country_code?: string;
+              postal_code?: string;
             }[];
             email?: string;
             phone_number?: string;
@@ -1854,12 +1854,12 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
           certificate_holder: {
             name: string;
             address: {
-              type: "mailing" | "billing";
+              type?: "mailing" | "billing";
               address_line: string;
-              city: string;
-              state: string;
-              country_code: string;
-              postal_code: string;
+              city?: string;
+              state?: string;
+              country_code?: string;
+              postal_code?: string;
             };
           };
         };
@@ -1899,12 +1899,12 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
       data: {
         business_information?: { name: string };
         addresses?: {
-          type: "mailing" | "billing";
+          type?: "mailing" | "billing";
           address_line: string;
-          city: string;
-          state: string;
-          country_code: string;
-          postal_code: string;
+          city?: string;
+          state?: string;
+          country_code?: string;
+          postal_code?: string;
         }[];
         email?: string;
         phone_number?: string;
@@ -1916,12 +1916,12 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
           data?: {
             business_information?: { name: string };
             addresses?: {
-              type: "mailing" | "billing";
+              type?: "mailing" | "billing";
               address_line: string;
-              city: string;
-              state: string;
-              country_code: string;
-              postal_code: string;
+              city?: string;
+              state?: string;
+              country_code?: string;
+              postal_code?: string;
             }[];
             email?: string;
             phone_number?: string;
