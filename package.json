@@ -1,6 +1,6 @@
 {
   "name": "cw-public-api",
-  "version": "1.4.2",
+  "version": "1.4.3",
   "description": "Auto generate typescript interfaces and http client from swagger spec",
   "main": "./dist/cwApi.js",
   "types": "./dist/cwApi.d.ts",
@@ -14,7 +14,7 @@
   "scripts": {
     "build": "tsc",
     "generate": "npx swagger-typescript-api --axios -p ./swagger.json -o ./src -n cwApi.ts",
-    "prepublish": "npm run build"
+    "prepublishOnly": "npm run build"
   },
   "repository": {
     "type": "git",
