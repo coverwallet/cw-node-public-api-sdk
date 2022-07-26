@@ -1206,6 +1206,42 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
         ...params,
       }),
   };
+  invoices = {
+    /**
+     * @description Create a new invoice
+     *
+     * @tags Invoices
+     * @name AddAccountDocumentInvoice
+     * @summary Create a new invoice
+     * @request POST:/invoices
+     * @secure
+     */
+    addAccountDocumentInvoice: (
+      data: {
+        data: {
+          invoice: {
+            external_id: string;
+            account_id: string;
+            document_number: string;
+            document: string;
+            billing_date: string;
+            total: { amount: number; currency: string };
+          };
+          lines: { policy_id: string; transaction: { effective_date: string } }[];
+        };
+      },
+      params: RequestParams = {},
+    ) =>
+      this.request<{ status?: string }, { errors?: { source?: string; type: string; message: string }[] }>({
+        path: `/invoices`,
+        method: "POST",
+        body: data,
+        secure: true,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+  };
   subscriptions = {
     /**
      * @description Add a new subscription
