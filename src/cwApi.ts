@@ -117,7 +117,7 @@ export type Endorsement = { id: string } & {
     | "Voided"
     | "In Progress"
     | null;
-  audit_turnback_status?: "NONE" | "REQUESTED" | "ACCEPTED" | "REJECTED" | null;
+  audit_turnback_status: "Requested" | "Accepted" | "Rejected";
   endorsement_number: string;
   type_of_change: "Policy Change" | "Cancellation" | "Audit" | "New policy" | "Reinstatement";
   processed_date: string;
@@ -126,7 +126,11 @@ export type Endorsement = { id: string } & {
   approved_date: string;
   premium_change: { amount: number; currency: string };
   taxes_change: { amount: number; currency: string };
-  fees_change: { amount: number; currency: string };
+  fees_change: {
+    carrier?: { amount: number; currency: string };
+    agency?: { amount: number; currency: string };
+    external_agency?: { amount: number; currency: string };
+  };
   financed_amount?: { amount: number; currency: string };
   correction_of_endorsement_id?: string;
 };
@@ -834,6 +838,41 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
         format: "json",
         ...params,
       }),
+
+    /**
+     * @description Create a new invoice
+     *
+     * @tags Account, Invoices
+     * @name AddAccountDocumentInvoice
+     * @summary Create a new invoice
+     * @request POST:/accounts/{id}/invoices
+     * @secure
+     */
+    addAccountDocumentInvoice: (
+      id: string,
+      data: {
+        data: {
+          invoice: {
+            external_id: string;
+            document_number: string;
+            document: string;
+            billing_date: string;
+            total: { amount: number; currency: string };
+          };
+          lines: { policy_id: string; transaction: { effective_date: string } }[];
+        };
+      },
+      params: RequestParams = {},
+    ) =>
+      this.request<{ status?: string }, { errors?: { source?: string; type: string; message: string }[] }>({
+        path: `/accounts/${id}/invoices`,
+        method: "POST",
+        body: data,
+        secure: true,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
   };
   policies = {
     /**
@@ -1076,7 +1115,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
               | "Voided"
               | "In Progress"
               | null;
-            audit_turnback_status?: "NONE" | "REQUESTED" | "ACCEPTED" | "REJECTED" | null;
+            audit_turnback_status: "Requested" | "Accepted" | "Rejected";
             endorsement_number: string;
             type_of_change: "Policy Change" | "Cancellation" | "Audit" | "New policy" | "Reinstatement";
             processed_date: string;
@@ -1085,7 +1124,11 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
             approved_date: string;
             premium_change: { amount: number; currency: string };
             taxes_change: { amount: number; currency: string };
-            fees_change: { amount: number; currency: string };
+            fees_change: {
+              carrier?: { amount: number; currency: string };
+              agency?: { amount: number; currency: string };
+              external_agency?: { amount: number; currency: string };
+            };
             financed_amount?: { amount: number; currency: string };
             correction_of_endorsement_id?: string;
           };
@@ -1202,42 +1245,6 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
         path: `/intermediaries`,
         method: "GET",
         secure: true,
-        format: "json",
-        ...params,
-      }),
-  };
-  invoices = {
-    /**
-     * @description Create a new invoice
-     *
-     * @tags Invoices
-     * @name AddAccountDocumentInvoice
-     * @summary Create a new invoice
-     * @request POST:/invoices
-     * @secure
-     */
-    addAccountDocumentInvoice: (
-      data: {
-        data: {
-          invoice: {
-            external_id: string;
-            account_id: string;
-            document_number: string;
-            document: string;
-            billing_date: string;
-            total: { amount: number; currency: string };
-          };
-          lines: { policy_id: string; transaction: { effective_date: string } }[];
-        };
-      },
-      params: RequestParams = {},
-    ) =>
-      this.request<{ status?: string }, { errors?: { source?: string; type: string; message: string }[] }>({
-        path: `/invoices`,
-        method: "POST",
-        body: data,
-        secure: true,
-        type: ContentType.Json,
         format: "json",
         ...params,
       }),
@@ -1581,7 +1588,6 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @name CreatePolicyEndorsement
      * @summary Create an endorsement or change in the policy
      * @request POST:/endorsements
-     * @deprecated
      * @secure
      */
     createPolicyEndorsement: (
@@ -1599,7 +1605,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
           | "Voided"
           | "In Progress"
           | null;
-        audit_turnback_status?: "NONE" | "REQUESTED" | "ACCEPTED" | "REJECTED" | null;
+        audit_turnback_status: "Requested" | "Accepted" | "Rejected";
         endorsement_number: string;
         type_of_change: "Policy Change" | "Cancellation" | "Audit" | "New policy" | "Reinstatement";
         processed_date: string;
@@ -1608,7 +1614,11 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
         approved_date: string;
         premium_change: { amount: number; currency: string };
         taxes_change: { amount: number; currency: string };
-        fees_change: { amount: number; currency: string };
+        fees_change: {
+          carrier?: { amount: number; currency: string };
+          agency?: { amount: number; currency: string };
+          external_agency?: { amount: number; currency: string };
+        };
         financed_amount?: { amount: number; currency: string };
         correction_of_endorsement_id?: string;
       },
@@ -1630,7 +1640,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
               | "Voided"
               | "In Progress"
               | null;
-            audit_turnback_status?: "NONE" | "REQUESTED" | "ACCEPTED" | "REJECTED" | null;
+            audit_turnback_status: "Requested" | "Accepted" | "Rejected";
             endorsement_number: string;
             type_of_change: "Policy Change" | "Cancellation" | "Audit" | "New policy" | "Reinstatement";
             processed_date: string;
@@ -1639,7 +1649,11 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
             approved_date: string;
             premium_change: { amount: number; currency: string };
             taxes_change: { amount: number; currency: string };
-            fees_change: { amount: number; currency: string };
+            fees_change: {
+              carrier?: { amount: number; currency: string };
+              agency?: { amount: number; currency: string };
+              external_agency?: { amount: number; currency: string };
+            };
             financed_amount?: { amount: number; currency: string };
             correction_of_endorsement_id?: string;
           };
@@ -1681,7 +1695,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
               | "Voided"
               | "In Progress"
               | null;
-            audit_turnback_status?: "NONE" | "REQUESTED" | "ACCEPTED" | "REJECTED" | null;
+            audit_turnback_status: "Requested" | "Accepted" | "Rejected";
             endorsement_number: string;
             type_of_change: "Policy Change" | "Cancellation" | "Audit" | "New policy" | "Reinstatement";
             processed_date: string;
@@ -1690,7 +1704,11 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
             approved_date: string;
             premium_change: { amount: number; currency: string };
             taxes_change: { amount: number; currency: string };
-            fees_change: { amount: number; currency: string };
+            fees_change: {
+              carrier?: { amount: number; currency: string };
+              agency?: { amount: number; currency: string };
+              external_agency?: { amount: number; currency: string };
+            };
             financed_amount?: { amount: number; currency: string };
             correction_of_endorsement_id?: string;
           })[];
