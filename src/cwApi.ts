@@ -954,6 +954,58 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
       }),
 
     /**
+     * @description Create a new certificate
+     *
+     * @tags Account, Certificates
+     * @name AddAccountDocumentCertificate
+     * @summary Create a new certificate
+     * @request POST:/accounts/{id}/certificates
+     * @deprecated
+     * @secure
+     */
+    addAccountDocumentCertificate: (
+      id: string,
+      data: {
+        certificate: {
+          external_id: string;
+          document: string;
+          effective_date: string;
+          expiration_date: string;
+          certificate_holder: {
+            name: string;
+            address: {
+              type?: "mailing" | "billing";
+              address_line: string;
+              city?: string;
+              state?: string;
+              country_code?: string;
+              postal_code?: string;
+            };
+          };
+        };
+        request: {
+          external_id: string;
+          internal_id?: string;
+          size: number;
+          type: "ADHOC" | "RENEWAL";
+          delivery_emails: any[];
+        };
+        policies: any[];
+        callback?: { url?: string };
+      },
+      params: RequestParams = {},
+    ) =>
+      this.request<{ process: { id: string } }, { errors?: { source?: string; type: string; message: string }[] }>({
+        path: `/accounts/${id}/certificates`,
+        method: "POST",
+        body: data,
+        secure: true,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
      * @description Create a new invoice
      *
      * @tags Account, Invoices
@@ -2014,58 +2066,6 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
       }),
   };
   servicing = {
-    /**
-     * @description Create a new certificate
-     *
-     * @tags Account, Certificates
-     * @name AddAccountDocumentCertificate
-     * @summary Create a new certificate
-     * @request POST:/servicing/accounts/{id}/import_certificates
-     * @deprecated
-     * @secure
-     */
-    addAccountDocumentCertificate: (
-      id: string,
-      data: {
-        certificate: {
-          external_id: string;
-          document: string;
-          effective_date: string;
-          expiration_date: string;
-          certificate_holder: {
-            name: string;
-            address: {
-              type?: "mailing" | "billing";
-              address_line: string;
-              city?: string;
-              state?: string;
-              country_code?: string;
-              postal_code?: string;
-            };
-          };
-        };
-        request: {
-          external_id: string;
-          internal_id?: string;
-          size: number;
-          type: "ADHOC" | "RENEWAL";
-          delivery_emails: any[];
-        };
-        policies: any[];
-        callback?: { url?: string };
-      },
-      params: RequestParams = {},
-    ) =>
-      this.request<{ process: { id: string } }, { errors?: { source?: string; type: string; message: string }[] }>({
-        path: `/servicing/accounts/${id}/import_certificates`,
-        method: "POST",
-        body: data,
-        secure: true,
-        type: ContentType.Json,
-        format: "json",
-        ...params,
-      }),
-
     /**
      * @description Apply account changes to an existing policy
      *
