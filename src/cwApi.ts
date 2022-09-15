@@ -124,6 +124,9 @@ export interface ServicingAccount {
 }
 
 export interface Case {
+  /** @example 1234i000001bmABCD */
+  id?: string;
+
   /** @example 001S000001IvjaTIAR */
   account_id: string;
 
@@ -362,7 +365,7 @@ export interface AgentRequest {
   account_id: string;
 
   /** Type of agent request */
-  type: "CERTIFICATE" | "MONEY_COLLECTION" | "CANCELLATION" | "ENDORSEMENT" | "REINSTATEMENT";
+  type: "CERTIFICATE" | "MONEY_COLLECTION" | "CANCELLATION" | "ENDORSEMENT" | "REINSTATEMENT" | "BILLING";
 
   /**
    * Subject for the agent request
@@ -376,7 +379,10 @@ export interface AgentRequest {
    */
   description: string;
 
-  /** Policy id to identify the related policy */
+  /**
+   * Policy id to identify the related policy
+   * @format uuid
+   */
   policy_id?: string;
 
   /** Endorsement id to identify the related endorsement */
@@ -2341,7 +2347,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     createRequest: (
       data: {
         account_id: string;
-        type: "CERTIFICATE" | "MONEY_COLLECTION" | "CANCELLATION" | "ENDORSEMENT" | "REINSTATEMENT";
+        type: "CERTIFICATE" | "MONEY_COLLECTION" | "CANCELLATION" | "ENDORSEMENT" | "REINSTATEMENT" | "BILLING";
         subject: string;
         description: string;
         policy_id?: string;
@@ -2357,7 +2363,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
         {
           data?: {
             account_id: string;
-            type: "CERTIFICATE" | "MONEY_COLLECTION" | "CANCELLATION" | "ENDORSEMENT" | "REINSTATEMENT";
+            type: "CERTIFICATE" | "MONEY_COLLECTION" | "CANCELLATION" | "ENDORSEMENT" | "REINSTATEMENT" | "BILLING";
             subject: string;
             description: string;
             policy_id?: string;
@@ -2499,6 +2505,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
       this.request<
         {
           data?: {
+            id?: string;
             account_id: string;
             policy_id?: string;
             endorsement_id?: string;
