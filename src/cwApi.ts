@@ -18,9 +18,11 @@ export interface Application {
       website?: string;
       identification_number?: string;
       year_established?: number;
+      years_of_experience?: number;
       annual_revenue?: { amount: number; currency: string };
       fulltime_employees?: number;
       parttime_employees?: number;
+      employees_annual_payroll?: number;
     };
     industry?: { type?: "naics"; code?: string };
     addresses?: {
@@ -42,10 +44,23 @@ export interface Application {
     communications_opt_out?: "email" | "sms" | "all" | "none";
     contact_numbers?: { type: "phone" | "extension" | "mobile" | "fax" | "other"; number: string }[];
   }[];
+  partnership: { id: string; lead_external_id?: string; source?: string };
 
-  /** Array of CW ID of the insurance types related to the application */
-  insurance_types?: string[];
-  partnership?: { id?: string; lead_external_id?: string; source?: string };
+  /**
+   * Hashmap with CW ID of the insurance types related to the application as the key which can include optionally a coverages object.
+   * @example {"67b48b38-21f5-4cac-9aec-3fd66ceb599b":{"coverages":{"each_aggregate":{"minimum":2000000,"current":2000000},"each_occurrence":{"minimum":2000000,"current":2000000},"deductible":{"maximum":2000000,"current":500000}}}}
+   */
+  insurance_details?: Record<
+    string,
+    {
+      coverages?: {
+        each_aggregate: { minimum: number; current: number };
+        each_occurrence: { minimum: number; current: number };
+        deductible: { maximum: number; current: number };
+      };
+    }
+  >;
+  custom_fields?: { key?: string; value?: string }[];
 }
 
 export interface Subscription {
@@ -75,9 +90,11 @@ export type Account = { id: string } & {
     website?: string;
     identification_number?: string;
     year_established?: number;
+    years_of_experience?: number;
     annual_revenue?: { amount: number; currency: string };
     fulltime_employees?: number;
     parttime_employees?: number;
+    employees_annual_payroll?: number;
   };
   industry?: { type?: "sic" | "naics" | "naf" | "anzsic"; class_code?: string; subclass_code?: string; code?: string };
   addresses?: {
@@ -121,32 +138,6 @@ export interface ServicingAccount {
    * @example +61285993444
    */
   phone_number?: string;
-}
-
-export interface Case {
-  /** @example 1234i000001bmABCD */
-  id?: string;
-
-  /** @example 001S000001IvjaTIAR */
-  account_id: string;
-
-  /** @example a0A4T000001lmZBUAY */
-  policy_id?: string;
-
-  /** @example a1F4T000000LiNiUAK */
-  endorsement_id?: string;
-  status?: "NEW" | "CLOSED";
-
-  /** @example Manual */
-  origin?: string;
-  priority?: "High" | "Medium" | "Normal" | "Low";
-  type?: "CERTIFICATE" | "MONEY_COLLECTION" | "CANCELLATION" | "ENDORSEMENT" | "REINSTATEMENT";
-
-  /** @example Sandbox: Rollbar failed */
-  subject?: string;
-
-  /** @example Possible Cross sell opportunity for Workers comp */
-  description?: string;
 }
 
 export type Commission = { id: string } & {
@@ -245,6 +236,19 @@ export type Payment = { id: string } & {
   related_voided_endorsement_id?: string;
   external_id?: string;
   effective_payment_date?: string;
+  payment_transaction_id?: string;
+};
+
+export type PaymentTransaction = { id: string } & {
+  id?: string;
+  external_id?: string;
+  status?: "succeeded";
+  account_id?: string;
+  amount_in_cents?: number;
+  currency?: string;
+  payment_method?: "card";
+  payment_type?: "Stripe";
+  performed_at?: string;
 };
 
 export type PaymentMethod = { type: "credit_card"; provider: "stripe"; token: string; account_id: string };
@@ -278,6 +282,20 @@ export type Policy = { id: string } & {
   billing_type?: "Direct" | "Agency" | "Unknown";
   invoiced_by?: "Carrier" | "Coverwallet" | "Premium Finance Company" | "External PAS" | "Account Current" | "Unknown";
   line_of_business?: { professional_liability?: { occurrence_limit?: number; aggregate_limit?: number } };
+  policy_document_link?: string;
+};
+
+export type Refund = { id: string } & {
+  id?: string;
+  client_refund_id?: string;
+  payment_id?: string;
+  payment_external_id?: string;
+  amount_in_cents?: number;
+  status?: "Succeeded" | "Failed";
+  currency?: string;
+  source?: string;
+  created?: string;
+  reason?: string;
 };
 
 export type Quote = { id: string } & {
@@ -365,7 +383,7 @@ export interface AgentRequest {
   account_id: string;
 
   /** Type of agent request */
-  type: "CERTIFICATE" | "MONEY_COLLECTION" | "CANCELLATION" | "ENDORSEMENT" | "REINSTATEMENT" | "BILLING";
+  type: "CERTIFICATE" | "MONEY_COLLECTION" | "BILLING";
 
   /**
    * Subject for the agent request
@@ -385,20 +403,8 @@ export interface AgentRequest {
    */
   policy_id?: string;
 
-  /** Endorsement id to identify the related endorsement */
-  endorsement_id?: string;
-
-  /** Status for the agent request */
-  status?: "NEW" | "CLOSED";
-
-  /** Origin for the agent request */
-  origin?: string;
-
-  /** Agent request owner id */
-  owner?: string;
-
   /** Priority for the agent request */
-  priority?: "HIGH" | "MEDIUM" | "NORMAL" | "LOW";
+  priority?: "HIGH" | "MEDIUM" | "LOW";
 }
 
 import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse, ResponseType } from "axios";
@@ -620,9 +626,11 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
           website?: string;
           identification_number?: string;
           year_established?: number;
+          years_of_experience?: number;
           annual_revenue?: { amount: number; currency: string };
           fulltime_employees?: number;
           parttime_employees?: number;
+          employees_annual_payroll?: number;
         };
         industry?: {
           type?: "sic" | "naics" | "naf" | "anzsic";
@@ -653,9 +661,11 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
               website?: string;
               identification_number?: string;
               year_established?: number;
+              years_of_experience?: number;
               annual_revenue?: { amount: number; currency: string };
               fulltime_employees?: number;
               parttime_employees?: number;
+              employees_annual_payroll?: number;
             };
             industry?: {
               type?: "sic" | "naics" | "naf" | "anzsic";
@@ -706,9 +716,11 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
               website?: string;
               identification_number?: string;
               year_established?: number;
+              years_of_experience?: number;
               annual_revenue?: { amount: number; currency: string };
               fulltime_employees?: number;
               parttime_employees?: number;
+              employees_annual_payroll?: number;
             };
             industry?: {
               type?: "sic" | "naics" | "naf" | "anzsic";
@@ -758,9 +770,11 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
               website?: string;
               identification_number?: string;
               year_established?: number;
+              years_of_experience?: number;
               annual_revenue?: { amount: number; currency: string };
               fulltime_employees?: number;
               parttime_employees?: number;
+              employees_annual_payroll?: number;
             };
             industry?: {
               type?: "sic" | "naics" | "naf" | "anzsic";
@@ -808,9 +822,11 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
           website?: string;
           identification_number?: string;
           year_established?: number;
+          years_of_experience?: number;
           annual_revenue?: { amount: number; currency: string };
           fulltime_employees?: number;
           parttime_employees?: number;
+          employees_annual_payroll?: number;
         };
         industry?: {
           type?: "sic" | "naics" | "naf" | "anzsic";
@@ -841,9 +857,11 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
               website?: string;
               identification_number?: string;
               year_established?: number;
+              years_of_experience?: number;
               annual_revenue?: { amount: number; currency: string };
               fulltime_employees?: number;
               parttime_employees?: number;
+              employees_annual_payroll?: number;
             };
             industry?: {
               type?: "sic" | "naics" | "naf" | "anzsic";
@@ -914,6 +932,65 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
         body: data,
         secure: true,
         type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Retrieve policies of an account
+     *
+     * @tags Account
+     * @name PoliciesDetail
+     * @summary Retrieve policies of an account
+     * @request GET:/accounts/{id}/policies
+     * @secure
+     */
+    policiesDetail: (id: string, params: RequestParams = {}) =>
+      this.request<
+        {
+          data?: {
+            id?: string;
+            external_id?: string;
+            policy_number?: string;
+            account_id?: string;
+            status?:
+              | "Pre-bind"
+              | "Active"
+              | "Reinstated"
+              | "In cancellation process"
+              | "Expired"
+              | "Flat Cancelled"
+              | "Cancelled";
+            effective_date?: string;
+            expiration_date?: string;
+            cancellation_date?: string;
+            premium?: { amount: number; currency: string };
+            taxes?: { amount: number; currency: string };
+            fees?: { amount: number; currency: string };
+            insurance_type?: string;
+            purchase_type?: "renewal_upload" | "renewal" | "new_business" | "cross_sell" | null;
+            renewal_flow?: "auto" | "nonauto" | null;
+            billing_carrier_id?: string;
+            issuing_carrier_id?: string;
+            finance_contract_number?: string;
+            intermediary_id?: string;
+            billing_type?: "Direct" | "Agency" | "Unknown";
+            invoiced_by?:
+              | "Carrier"
+              | "Coverwallet"
+              | "Premium Finance Company"
+              | "External PAS"
+              | "Account Current"
+              | "Unknown";
+            line_of_business?: { professional_liability?: { occurrence_limit?: number; aggregate_limit?: number } };
+            policy_document_link?: string;
+          }[];
+        },
+        { errors?: { source?: string; type: string; message: string }[] }
+      >({
+        path: `/accounts/${id}/policies`,
+        method: "GET",
+        secure: true,
         format: "json",
         ...params,
       }),
@@ -1092,6 +1169,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
           | "Account Current"
           | "Unknown";
         line_of_business?: { professional_liability?: { occurrence_limit?: number; aggregate_limit?: number } };
+        policy_document_link?: string;
       },
       params: RequestParams = {},
     ) =>
@@ -1132,6 +1210,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
               | "Account Current"
               | "Unknown";
             line_of_business?: { professional_liability?: { occurrence_limit?: number; aggregate_limit?: number } };
+            policy_document_link?: string;
           };
         },
         { errors?: { source?: string; type: string; message: string }[] }
@@ -1195,6 +1274,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
               | "Account Current"
               | "Unknown";
             line_of_business?: { professional_liability?: { occurrence_limit?: number; aggregate_limit?: number } };
+            policy_document_link?: string;
           })[];
         },
         { errors?: { source?: string; type: string; message: string }[] }
@@ -1254,6 +1334,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
               | "Account Current"
               | "Unknown";
             line_of_business?: { professional_liability?: { occurrence_limit?: number; aggregate_limit?: number } };
+            policy_document_link?: string;
           })[];
         },
         { errors?: { source?: string; type: string; message: string }[] }
@@ -1352,6 +1433,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
             related_voided_endorsement_id?: string;
             external_id?: string;
             effective_payment_date?: string;
+            payment_transaction_id?: string;
           }[];
         },
         any
@@ -1640,6 +1722,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
             related_voided_endorsement_id?: string;
             external_id?: string;
             effective_payment_date?: string;
+            payment_transaction_id?: string;
           }[];
         },
         any
@@ -1647,6 +1730,86 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
         path: `/payments/${id}`,
         method: "GET",
         secure: true,
+        format: "json",
+        ...params,
+      }),
+  };
+  paymentTransactions = {
+    /**
+     * @description Fetch a payment transaction by external (Stripe) ID
+     *
+     * @tags Payment Transactions
+     * @name GetPaymentTransaction
+     * @summary Fetch a payment transaction
+     * @request GET:/payment_transactions/{id}
+     * @secure
+     */
+    getPaymentTransaction: (id: string, params: RequestParams = {}) =>
+      this.request<
+        {
+          data?: {
+            id?: string;
+            external_id?: string;
+            status?: "succeeded";
+            account_id?: string;
+            amount_in_cents?: number;
+            currency?: string;
+            payment_method?: "card";
+            payment_type?: "Stripe";
+            performed_at?: string;
+          }[];
+        },
+        { errors?: { source?: string; type: string; message: string }[] }
+      >({
+        path: `/payment_transactions/${id}`,
+        method: "GET",
+        secure: true,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description To be requested by external clients to create a refund (full or partial) for a payment
+     *
+     * @tags Payment Transactions
+     * @name CreateRefund
+     * @summary Create a refund for a payment
+     * @request POST:/payment_transactions/{id}/refunds
+     * @secure
+     */
+    createRefund: (
+      id: string,
+      data: {
+        client_refund_id?: string;
+        amount_in_cents?: number;
+        currency?: string;
+        policy_id?: string;
+        reason?: string;
+      },
+      params: RequestParams = {},
+    ) =>
+      this.request<
+        {
+          data?: {
+            id?: string;
+            client_refund_id?: string;
+            payment_id?: string;
+            payment_external_id?: string;
+            amount_in_cents?: number;
+            status?: "Succeeded" | "Failed";
+            currency?: string;
+            source?: string;
+            created?: string;
+            reason?: string;
+          };
+        },
+        { errors?: { source?: string; type: string; message: string }[] }
+      >({
+        path: `/payment_transactions/${id}/refunds`,
+        method: "POST",
+        body: data,
+        secure: true,
+        type: ContentType.Json,
         format: "json",
         ...params,
       }),
@@ -1707,7 +1870,26 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @request PATCH:/quotes/{id}
      * @secure
      */
-    patchQuote: (id: string, data: PatchRequest, params: RequestParams = {}) =>
+    patchQuote: (
+      id: string,
+      data:
+        | {
+            data: {
+              op: "add" | "remove" | "replace" | "move" | "copy" | "test";
+              path: string;
+              value?: object;
+              from?: string;
+            }[];
+            callback: { url: string };
+          }
+        | {
+            op: "add" | "remove" | "replace" | "move" | "copy" | "test";
+            path: string;
+            value?: object;
+            from?: string;
+          }[],
+      params: RequestParams = {},
+    ) =>
       this.request<
         { data?: { operation_id?: string; status?: "processing" } },
         { errors?: { source?: string; type: string; message: string }[] }
@@ -1765,6 +1947,29 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
         query: query,
         secure: true,
         format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Sync a quote purchased outside of CW
+     *
+     * @tags Quote
+     * @name UpdateQuote
+     * @summary Sync a quote
+     * @request POST:/quotes/{id}/bind
+     * @secure
+     */
+    updateQuote: (
+      id: string,
+      data: { policy: { number: string }; invoice: { paid_by: "insured" } },
+      params: RequestParams = {},
+    ) =>
+      this.request<void, { errors?: { source?: string; type: string; message: string }[] }>({
+        path: `/quotes/${id}/bind`,
+        method: "POST",
+        body: data,
+        secure: true,
+        type: ContentType.Json,
         ...params,
       }),
   };
@@ -1974,6 +2179,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
             related_voided_endorsement_id?: string;
             external_id?: string;
             effective_payment_date?: string;
+            payment_transaction_id?: string;
           }[];
         },
         any
@@ -2347,15 +2553,11 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     createRequest: (
       data: {
         account_id: string;
-        type: "CERTIFICATE" | "MONEY_COLLECTION" | "CANCELLATION" | "ENDORSEMENT" | "REINSTATEMENT" | "BILLING";
+        type: "CERTIFICATE" | "MONEY_COLLECTION" | "BILLING";
         subject: string;
         description: string;
         policy_id?: string;
-        endorsement_id?: string;
-        status?: "NEW" | "CLOSED";
-        origin?: string;
-        owner?: string;
-        priority?: "HIGH" | "MEDIUM" | "NORMAL" | "LOW";
+        priority?: "HIGH" | "MEDIUM" | "LOW";
       },
       params: RequestParams = {},
     ) =>
@@ -2363,15 +2565,11 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
         {
           data?: {
             account_id: string;
-            type: "CERTIFICATE" | "MONEY_COLLECTION" | "CANCELLATION" | "ENDORSEMENT" | "REINSTATEMENT" | "BILLING";
+            type: "CERTIFICATE" | "MONEY_COLLECTION" | "BILLING";
             subject: string;
             description: string;
             policy_id?: string;
-            endorsement_id?: string;
-            status?: "NEW" | "CLOSED";
-            origin?: string;
-            owner?: string;
-            priority?: "HIGH" | "MEDIUM" | "NORMAL" | "LOW";
+            priority?: "HIGH" | "MEDIUM" | "LOW";
           };
         },
         { errors?: { source?: string; type: string; message: string }[] }
@@ -2442,9 +2640,11 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
             website?: string;
             identification_number?: string;
             year_established?: number;
+            years_of_experience?: number;
             annual_revenue?: { amount: number; currency: string };
             fulltime_employees?: number;
             parttime_employees?: number;
+            employees_annual_payroll?: number;
           };
           industry?: { type?: "naics"; code?: string };
           addresses?: {
@@ -2466,8 +2666,18 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
           communications_opt_out?: "email" | "sms" | "all" | "none";
           contact_numbers?: { type: "phone" | "extension" | "mobile" | "fax" | "other"; number: string }[];
         }[];
-        insurance_types?: string[];
-        partnership?: { id?: string; lead_external_id?: string; source?: string };
+        partnership: { id: string; lead_external_id?: string; source?: string };
+        insurance_details?: Record<
+          string,
+          {
+            coverages?: {
+              each_aggregate: { minimum: number; current: number };
+              each_occurrence: { minimum: number; current: number };
+              deductible: { maximum: number; current: number };
+            };
+          }
+        >;
+        custom_fields?: { key?: string; value?: string }[];
       },
       params: RequestParams = {},
     ) =>
@@ -2480,49 +2690,6 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
         body: data,
         secure: true,
         type: ContentType.Json,
-        format: "json",
-        ...params,
-      }),
-  };
-  cases = {
-    /**
-     * @description Fetch cases filtering by any of the supported parameters listed below. If no parameters are provided, no cases will be returned and a error will be triggered.
-     *
-     * @tags Case
-     * @name ListCasesByFilter
-     * @summary Fetch cases filtered by query params
-     * @request GET:/cases
-     * @deprecated
-     * @secure
-     */
-    listCasesByFilter: (
-      query: {
-        account_id: string;
-        type?: "CERTIFICATE" | "MONEY_COLLECTION" | "CANCELLATION" | "ENDORSEMENT" | "REINSTATEMENT";
-      },
-      params: RequestParams = {},
-    ) =>
-      this.request<
-        {
-          data?: {
-            id?: string;
-            account_id: string;
-            policy_id?: string;
-            endorsement_id?: string;
-            status?: "NEW" | "CLOSED";
-            origin?: string;
-            priority?: "High" | "Medium" | "Normal" | "Low";
-            type?: "CERTIFICATE" | "MONEY_COLLECTION" | "CANCELLATION" | "ENDORSEMENT" | "REINSTATEMENT";
-            subject?: string;
-            description?: string;
-          }[];
-        },
-        { errors?: { source?: string; type: string; message: string }[] }
-      >({
-        path: `/cases`,
-        method: "GET",
-        query: query,
-        secure: true,
         format: "json",
         ...params,
       }),
