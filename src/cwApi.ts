@@ -27,7 +27,7 @@ export interface Application {
     industry?: { type?: "naics"; code?: string };
     addresses?: {
       type?: "mailing" | "billing";
-      address_line: string;
+      address_line?: string;
       city?: string;
       state?: string;
       country_code?: string;
@@ -61,6 +61,13 @@ export interface Application {
     }
   >;
   custom_fields?: { key?: string; value?: string }[];
+
+  /**
+   * Array of fields for information that does not fit into any of the other specific fields:
+   *   * Maximum size: 10KB in total
+   *
+   */
+  other_information?: { key?: string; value?: string }[];
 }
 
 export interface Subscription {
@@ -84,6 +91,7 @@ export interface Subscription {
 
 export type Account = { id: string } & {
   external_id?: string;
+  agent_id?: string;
   business_information?: {
     name: string;
     type?: string;
@@ -119,10 +127,16 @@ export interface ServicingAccount {
     country_code?: string;
     postal_code?: string;
   }[];
+  contacts?: {
+    first_name: string;
+    last_name: string;
+    email: string;
+    contact_numbers: { type: "phone" | "extension" | "mobile" | "fax" | "other"; number: string }[];
+  }[];
 
   /**
    * @format email
-   * @example sample_mail@mail.com
+   * @example sample_mail@cwtest.com
    */
   email?: string;
 
@@ -138,6 +152,113 @@ export interface ServicingAccount {
    * @example +61285993444
    */
   phone_number?: string;
+}
+
+export type ServicingMidtermChanges = {
+  description: string;
+  effective_date: string;
+  premium_change: { amount: number; currency: string };
+  taxes_change: { amount: number; currency: string };
+  fees_change: {
+    carrier: { amount: number; currency: string };
+    agency: { amount: number; currency: string };
+    external_agency: { amount: number; currency: string };
+  };
+  status:
+    | "NOT_STARTED"
+    | "PENDING_PAYMENT"
+    | "UNDER_REVIEW,"
+    | "APPROVED"
+    | "PAYMENT_NOT_COLLECTED"
+    | "NOT_NEEDED"
+    | "VOIDED"
+    | null;
+  pending_action: boolean;
+  invoice_external_id?: string;
+} & { line_of_business?: { professional_liability?: { occurrence_limit?: number; aggregate_limit?: number } } } & {
+  request_payment?: boolean;
+};
+
+export type ServicingCancellation = {
+  description: string;
+  effective_date: string;
+  premium_change: { amount: number; currency: string };
+  taxes_change: { amount: number; currency: string };
+  fees_change: {
+    carrier: { amount: number; currency: string };
+    agency: { amount: number; currency: string };
+    external_agency: { amount: number; currency: string };
+  };
+  status:
+    | "NOT_STARTED"
+    | "PENDING_PAYMENT"
+    | "UNDER_REVIEW,"
+    | "APPROVED"
+    | "PAYMENT_NOT_COLLECTED"
+    | "NOT_NEEDED"
+    | "VOIDED"
+    | null;
+  pending_action: boolean;
+  invoice_external_id?: string;
+};
+
+export type ServicingReinstatement = {
+  description: string;
+  effective_date: string;
+  premium_change: { amount: number; currency: string };
+  taxes_change: { amount: number; currency: string };
+  fees_change: {
+    carrier: { amount: number; currency: string };
+    agency: { amount: number; currency: string };
+    external_agency: { amount: number; currency: string };
+  };
+  status:
+    | "NOT_STARTED"
+    | "PENDING_PAYMENT"
+    | "UNDER_REVIEW,"
+    | "APPROVED"
+    | "PAYMENT_NOT_COLLECTED"
+    | "NOT_NEEDED"
+    | "VOIDED"
+    | null;
+  pending_action: boolean;
+  invoice_external_id?: string;
+} & { request_payment?: boolean };
+
+export type ServicingAudit = {
+  description: string;
+  effective_date: string;
+  premium_change: { amount: number; currency: string };
+  taxes_change: { amount: number; currency: string };
+  fees_change: {
+    carrier: { amount: number; currency: string };
+    agency: { amount: number; currency: string };
+    external_agency: { amount: number; currency: string };
+  };
+  status:
+    | "NOT_STARTED"
+    | "PENDING_PAYMENT"
+    | "UNDER_REVIEW,"
+    | "APPROVED"
+    | "PAYMENT_NOT_COLLECTED"
+    | "NOT_NEEDED"
+    | "VOIDED"
+    | null;
+  pending_action: boolean;
+  invoice_external_id?: string;
+};
+
+export interface ServicingRequestPaid {
+  data: {
+    payment_method?: string;
+    amount_collected?: { amount: number; currency: string };
+    payment_external_id?: string;
+  };
+  callback: { url?: string };
+}
+
+export interface ServicingRequestNotPaid {
+  callback: { url?: string };
 }
 
 export type Commission = { id: string } & {
@@ -170,7 +291,6 @@ export type Endorsement = { id: string } & {
     | "Payment Not Collected"
     | "Not needed"
     | "Voided"
-    | "In Progress"
     | null;
   audit_turnback_status: "Requested" | "Accepted" | "Rejected";
   endorsement_number: string;
@@ -190,43 +310,13 @@ export type Endorsement = { id: string } & {
   correction_of_endorsement_id?: string;
 };
 
-export interface ServicingEndorsement {
-  /** @example <p>added policy document to related files in new policy endorsement</p> */
-  description: string;
-
-  /**
-   * @format data
-   * @example 2017-02-21
-   */
-  effective_date: string;
-  premium_change: { amount: number; currency: string };
-  taxes_change: { amount: number; currency: string };
-  fees_change: {
-    carrier: { amount: number; currency: string };
-    agency: { amount: number; currency: string };
-    external_agency: { amount: number; currency: string };
-  };
-  status:
-    | "Not started"
-    | "Pending payment"
-    | "Under review"
-    | "Approved"
-    | "Payment Not Collected"
-    | "Not needed"
-    | "Voided"
-    | null;
-
-  /** @example true */
-  pending_action: boolean;
-}
-
 export type InsuranceType = { id: string } & { name?: string; id?: string };
 
 export type Payment = { id: string } & {
   id?: string;
   payment_date?: string;
   policy_id?: string;
-  status?: "Succeeded" | "Failed" | "Pending" | "Disputed" | "Billing Approved" | "Not Collected" | "Requested" | null;
+  status?: "Succeeded" | "Failed" | "Pending" | "Disputed" | "Billing Approved" | null;
   account_id?: string;
   amount?: { amount: number; currency: string };
   payment_method?: "Card" | "Bank account" | "Bank transfer" | "Check" | "Account Current" | "Paypal";
@@ -284,6 +374,17 @@ export type Policy = { id: string } & {
   line_of_business?: { professional_liability?: { occurrence_limit?: number; aggregate_limit?: number } };
   policy_document_link?: string;
 };
+
+export interface PolicyDocument {
+  /** @format base64 */
+  file?: string;
+
+  /**
+   * @format data
+   * @example 2017-02-21
+   */
+  create_date?: string;
+}
 
 export type Refund = { id: string } & {
   id?: string;
@@ -383,7 +484,7 @@ export interface AgentRequest {
   account_id: string;
 
   /** Type of agent request */
-  type: "CERTIFICATE" | "MONEY_COLLECTION" | "BILLING";
+  type: "CERTIFICATE" | "MONEY_COLLECTION" | "BILLING" | "DOCUMENTATION";
 
   /**
    * Subject for the agent request
@@ -549,6 +650,11 @@ export class HttpClient<SecurityDataType = unknown> {
  * Some endpoints require the API client to send an idempotency key in the `X-IdempotencyKey`
  * header to uniquely identify a request.
  *
+ * ### Organization
+ *
+ * Some endpoints require the API client to send an organization id key in the `x-organizationid`
+ * header to identify the organization.
+ *
  * ### Error handling
  *
  * All errors returned by the API endpoints follow the same structure:
@@ -620,6 +726,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     addAccount: (
       data: {
         external_id?: string;
+        agent_id?: string;
         business_information?: {
           name: string;
           type?: string;
@@ -655,6 +762,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
         {
           data?: { id: string } & {
             external_id?: string;
+            agent_id?: string;
             business_information?: {
               name: string;
               type?: string;
@@ -685,7 +793,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
             phone_number?: string;
           };
         },
-        { errors?: { source?: string; type: string; message: string }[] } | { message?: string }
+        { errors?: { source?: string; type: string; message: string }[] }
       >({
         path: `/accounts`,
         method: "POST",
@@ -710,6 +818,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
         {
           data?: ({ id: string } & {
             external_id?: string;
+            agent_id?: string;
             business_information?: {
               name: string;
               type?: string;
@@ -764,6 +873,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
         {
           data?: { id: string } & {
             external_id?: string;
+            agent_id?: string;
             business_information?: {
               name: string;
               type?: string;
@@ -816,6 +926,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
       id: string,
       data: {
         external_id?: string;
+        agent_id?: string;
         business_information?: {
           name: string;
           type?: string;
@@ -851,6 +962,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
         {
           data?: { id: string } & {
             external_id?: string;
+            agent_id?: string;
             business_information?: {
               name: string;
               type?: string;
@@ -1370,7 +1482,6 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
               | "Payment Not Collected"
               | "Not needed"
               | "Voided"
-              | "In Progress"
               | null;
             audit_turnback_status: "Requested" | "Accepted" | "Rejected";
             endorsement_number: string;
@@ -1415,15 +1526,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
             id?: string;
             payment_date?: string;
             policy_id?: string;
-            status?:
-              | "Succeeded"
-              | "Failed"
-              | "Pending"
-              | "Disputed"
-              | "Billing Approved"
-              | "Not Collected"
-              | "Requested"
-              | null;
+            status?: "Succeeded" | "Failed" | "Pending" | "Disputed" | "Billing Approved" | null;
             account_id?: string;
             amount?: { amount: number; currency: string };
             payment_method?: "Card" | "Bank account" | "Bank transfer" | "Check" | "Account Current" | "Paypal";
@@ -1441,6 +1544,29 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
         path: `/policies/${id}/payments`,
         method: "GET",
         secure: true,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Create document of a policy
+     *
+     * @tags Policy
+     * @name DocumentsPolicyCreate
+     * @summary Create document of a policy
+     * @request POST:/policies/{id}/documents/policy
+     * @secure
+     */
+    documentsPolicyCreate: (id: string, data: { file?: string; create_date?: string }, params: RequestParams = {}) =>
+      this.request<
+        { data?: { id: string } & { create_date?: string } },
+        { errors?: { source?: string; type: string; message: string }[] }
+      >({
+        path: `/policies/${id}/documents/policy`,
+        method: "POST",
+        body: data,
+        secure: true,
+        type: ContentType.FormData,
         format: "json",
         ...params,
       }),
@@ -1554,7 +1680,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @request GET:/subscriptions
      * @secure
      */
-    listSubscriptions: (params: RequestParams = {}) =>
+    listSubscriptions: (query?: { type?: "ephemeral" | "persistent" | "all" }, params: RequestParams = {}) =>
       this.request<
         {
           data?: ({ id: string } & {
@@ -1567,6 +1693,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
       >({
         path: `/subscriptions`,
         method: "GET",
+        query: query,
         secure: true,
         format: "json",
         ...params,
@@ -1704,15 +1831,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
             id?: string;
             payment_date?: string;
             policy_id?: string;
-            status?:
-              | "Succeeded"
-              | "Failed"
-              | "Pending"
-              | "Disputed"
-              | "Billing Approved"
-              | "Not Collected"
-              | "Requested"
-              | null;
+            status?: "Succeeded" | "Failed" | "Pending" | "Disputed" | "Billing Approved" | null;
             account_id?: string;
             amount?: { amount: number; currency: string };
             payment_method?: "Card" | "Bank account" | "Bank transfer" | "Check" | "Account Current" | "Paypal";
@@ -1725,7 +1844,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
             payment_transaction_id?: string;
           }[];
         },
-        any
+        { errors?: { source?: string; type: string; message: string }[] }
       >({
         path: `/payments/${id}`,
         method: "GET",
@@ -1912,7 +2031,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @request GET:/quotes
      * @secure
      */
-    listQuotes: (query: { external_id: string }, params: RequestParams = {}) =>
+    listQuotes: (query: { external_id: string; effective_date?: string }, params: RequestParams = {}) =>
       this.request<
         {
           data?: ({ id: string } & {
@@ -1951,6 +2070,56 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
       }),
 
     /**
+     * @description Create quote
+     *
+     * @tags Quote
+     * @name QuotesCreate
+     * @summary Add a new quote
+     * @request POST:/quotes
+     * @secure
+     */
+    quotesCreate: (
+      data: {
+        data: {
+          external_id: string;
+          account_id: string;
+          expiring_policy_id: string;
+          policy_ids: string[];
+          name: string;
+          stage:
+            | "NON_QUOTED"
+            | "PENDING_CUSTOMER_INFORMATION"
+            | "QUOTED_PENDING_PRODUCER"
+            | "QUOTED_PENDING_APPROVAL"
+            | "QUOTED_AVAILABLE_TO_PURCHASE"
+            | "PURCHASED"
+            | "REJECTED";
+          renewal_type: "new" | "renewal";
+          premium: { amount: number; currency: string };
+          taxes: { amount: number; currency: string };
+          effective_date: string;
+          expiration_date: string;
+          fees: {
+            carrier?: { amount: number; currency: string };
+            agency?: { amount: number; currency: string };
+            external_agency?: { amount: number; currency: string };
+          };
+        };
+        callback: { url: string };
+      },
+      params: RequestParams = {},
+    ) =>
+      this.request<{ process: { id: string } }, { errors?: { source?: string; type: string; message: string }[] }>({
+        path: `/quotes`,
+        method: "POST",
+        body: data,
+        secure: true,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
      * @description Sync a quote purchased outside of CW
      *
      * @tags Quote
@@ -1975,94 +2144,6 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
   };
   endorsements = {
     /**
-     * @description Create an endorsement or change in the policy
-     *
-     * @tags Endorsements
-     * @name CreatePolicyEndorsement
-     * @summary Create an endorsement or change in the policy
-     * @request POST:/endorsements
-     * @secure
-     */
-    createPolicyEndorsement: (
-      data: {
-        id: string;
-        policy_id: string;
-        account_id: string;
-        status:
-          | "Not started"
-          | "Pending payment"
-          | "Under review"
-          | "Approved"
-          | "Payment Not Collected"
-          | "Not needed"
-          | "Voided"
-          | "In Progress"
-          | null;
-        audit_turnback_status: "Requested" | "Accepted" | "Rejected";
-        endorsement_number: string;
-        type_of_change: "Policy Change" | "Cancellation" | "Audit" | "New policy" | "Reinstatement";
-        processed_date: string;
-        description: string;
-        effective_date: string;
-        approved_date: string;
-        premium_change: { amount: number; currency: string };
-        taxes_change: { amount: number; currency: string };
-        fees_change: {
-          carrier?: { amount: number; currency: string };
-          agency?: { amount: number; currency: string };
-          external_agency?: { amount: number; currency: string };
-        };
-        financed_amount?: { amount: number; currency: string };
-        correction_of_endorsement_id?: string;
-      },
-      params: RequestParams = {},
-    ) =>
-      this.request<
-        {
-          data?: {
-            id: string;
-            policy_id: string;
-            account_id: string;
-            status:
-              | "Not started"
-              | "Pending payment"
-              | "Under review"
-              | "Approved"
-              | "Payment Not Collected"
-              | "Not needed"
-              | "Voided"
-              | "In Progress"
-              | null;
-            audit_turnback_status: "Requested" | "Accepted" | "Rejected";
-            endorsement_number: string;
-            type_of_change: "Policy Change" | "Cancellation" | "Audit" | "New policy" | "Reinstatement";
-            processed_date: string;
-            description: string;
-            effective_date: string;
-            approved_date: string;
-            premium_change: { amount: number; currency: string };
-            taxes_change: { amount: number; currency: string };
-            fees_change: {
-              carrier?: { amount: number; currency: string };
-              agency?: { amount: number; currency: string };
-              external_agency?: { amount: number; currency: string };
-            };
-            financed_amount?: { amount: number; currency: string };
-            correction_of_endorsement_id?: string;
-          };
-        },
-        { errors?: { source?: string; type: string; message: string }[] }
-      >({
-        path: `/endorsements`,
-        method: "POST",
-        body: data,
-        secure: true,
-        type: ContentType.Json,
-        format: "json",
-        ...params,
-      }),
-
-    /**
      * @description Fetch an endorsement by ID
      *
      * @tags Endorsements
@@ -2086,7 +2167,6 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
               | "Payment Not Collected"
               | "Not needed"
               | "Voided"
-              | "In Progress"
               | null;
             audit_turnback_status: "Requested" | "Accepted" | "Rejected";
             endorsement_number: string;
@@ -2161,15 +2241,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
             id?: string;
             payment_date?: string;
             policy_id?: string;
-            status?:
-              | "Succeeded"
-              | "Failed"
-              | "Pending"
-              | "Disputed"
-              | "Billing Approved"
-              | "Not Collected"
-              | "Requested"
-              | null;
+            status?: "Succeeded" | "Failed" | "Pending" | "Disputed" | "Billing Approved" | null;
             account_id?: string;
             amount?: { amount: number; currency: string };
             payment_method?: "Card" | "Bank account" | "Bank transfer" | "Check" | "Account Current" | "Paypal";
@@ -2299,6 +2371,12 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
           country_code?: string;
           postal_code?: string;
         }[];
+        contacts?: {
+          first_name: string;
+          last_name: string;
+          email: string;
+          contact_numbers: { type: "phone" | "extension" | "mobile" | "fax" | "other"; number: string }[];
+        }[];
         email?: string;
         phone_number?: string;
       },
@@ -2306,21 +2384,25 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     ) =>
       this.request<
         {
-          data?: {
-            business_information?: { name: string };
-            addresses?: {
-              type?: "mailing" | "billing";
-              address_line: string;
-              city?: string;
-              state?: string;
-              country_code?: string;
-              postal_code?: string;
-            }[];
-            email?: string;
-            phone_number?: string;
-          };
+          business_information?: { name: string };
+          addresses?: {
+            type?: "mailing" | "billing";
+            address_line: string;
+            city?: string;
+            state?: string;
+            country_code?: string;
+            postal_code?: string;
+          }[];
+          contacts?: {
+            first_name: string;
+            last_name: string;
+            email: string;
+            contact_numbers: { type: "phone" | "extension" | "mobile" | "fax" | "other"; number: string }[];
+          }[];
+          email?: string;
+          phone_number?: string;
         },
-        { errors?: { source?: string; type: string; message: string }[] } | { message?: string }
+        { errors?: { source?: string; type: string; message: string }[] }
       >({
         path: `/servicing/accounts/${id}/account_changes`,
         method: "POST",
@@ -2353,45 +2435,47 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
           external_agency: { amount: number; currency: string };
         };
         status:
-          | "Not started"
-          | "Pending payment"
-          | "Under review"
-          | "Approved"
-          | "Payment Not Collected"
-          | "Not needed"
-          | "Voided"
+          | "NOT_STARTED"
+          | "PENDING_PAYMENT"
+          | "UNDER_REVIEW,"
+          | "APPROVED"
+          | "PAYMENT_NOT_COLLECTED"
+          | "NOT_NEEDED"
+          | "VOIDED"
           | null;
         pending_action: boolean;
-      } & { line_of_business?: { professional_liability?: { occurrence_limit?: number; aggregate_limit?: number } } },
+        invoice_external_id?: string;
+      } & {
+        line_of_business?: { professional_liability?: { occurrence_limit?: number; aggregate_limit?: number } };
+      } & { request_payment?: boolean },
       params: RequestParams = {},
     ) =>
       this.request<
         {
-          data?: {
-            description: string;
-            effective_date: string;
-            premium_change: { amount: number; currency: string };
-            taxes_change: { amount: number; currency: string };
-            fees_change: {
-              carrier: { amount: number; currency: string };
-              agency: { amount: number; currency: string };
-              external_agency: { amount: number; currency: string };
-            };
-            status:
-              | "Not started"
-              | "Pending payment"
-              | "Under review"
-              | "Approved"
-              | "Payment Not Collected"
-              | "Not needed"
-              | "Voided"
-              | null;
-            pending_action: boolean;
-          } & {
-            line_of_business?: { professional_liability?: { occurrence_limit?: number; aggregate_limit?: number } };
+          description: string;
+          effective_date: string;
+          premium_change: { amount: number; currency: string };
+          taxes_change: { amount: number; currency: string };
+          fees_change: {
+            carrier: { amount: number; currency: string };
+            agency: { amount: number; currency: string };
+            external_agency: { amount: number; currency: string };
           };
-        },
-        { errors?: { source?: string; type: string; message: string }[] } | { message?: string }
+          status:
+            | "NOT_STARTED"
+            | "PENDING_PAYMENT"
+            | "UNDER_REVIEW,"
+            | "APPROVED"
+            | "PAYMENT_NOT_COLLECTED"
+            | "NOT_NEEDED"
+            | "VOIDED"
+            | null;
+          pending_action: boolean;
+          invoice_external_id?: string;
+        } & {
+          line_of_business?: { professional_liability?: { occurrence_limit?: number; aggregate_limit?: number } };
+        } & { request_payment?: boolean },
+        { errors?: { source?: string; type: string; message: string }[] }
       >({
         path: `/servicing/policies/${id}/midterm_changes`,
         method: "POST",
@@ -2411,57 +2495,8 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @request POST:/servicing/policies/{id}/cancellation
      * @secure
      */
-    applyCancellation: (
-      id: string,
-      data: {
-        description: string;
-        effective_date: string;
-        premium_change: { amount: number; currency: string };
-        taxes_change: { amount: number; currency: string };
-        fees_change: {
-          carrier: { amount: number; currency: string };
-          agency: { amount: number; currency: string };
-          external_agency: { amount: number; currency: string };
-        };
-        status:
-          | "Not started"
-          | "Pending payment"
-          | "Under review"
-          | "Approved"
-          | "Payment Not Collected"
-          | "Not needed"
-          | "Voided"
-          | null;
-        pending_action: boolean;
-      },
-      params: RequestParams = {},
-    ) =>
-      this.request<
-        {
-          data?: {
-            description: string;
-            effective_date: string;
-            premium_change: { amount: number; currency: string };
-            taxes_change: { amount: number; currency: string };
-            fees_change: {
-              carrier: { amount: number; currency: string };
-              agency: { amount: number; currency: string };
-              external_agency: { amount: number; currency: string };
-            };
-            status:
-              | "Not started"
-              | "Pending payment"
-              | "Under review"
-              | "Approved"
-              | "Payment Not Collected"
-              | "Not needed"
-              | "Voided"
-              | null;
-            pending_action: boolean;
-          };
-        },
-        { errors?: { source?: string; type: string; message: string }[] } | { message?: string }
-      >({
+    applyCancellation: (id: string, data: ServicingCancellation, params: RequestParams = {}) =>
+      this.request<ServicingCancellation, { errors?: { source?: string; type: string; message: string }[] }>({
         path: `/servicing/policies/${id}/cancellation`,
         method: "POST",
         body: data,
@@ -2493,45 +2528,126 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
           external_agency: { amount: number; currency: string };
         };
         status:
-          | "Not started"
-          | "Pending payment"
-          | "Under review"
-          | "Approved"
-          | "Payment Not Collected"
-          | "Not needed"
-          | "Voided"
+          | "NOT_STARTED"
+          | "PENDING_PAYMENT"
+          | "UNDER_REVIEW,"
+          | "APPROVED"
+          | "PAYMENT_NOT_COLLECTED"
+          | "NOT_NEEDED"
+          | "VOIDED"
           | null;
         pending_action: boolean;
+        invoice_external_id?: string;
+      } & { request_payment?: boolean },
+      params: RequestParams = {},
+    ) =>
+      this.request<
+        {
+          description: string;
+          effective_date: string;
+          premium_change: { amount: number; currency: string };
+          taxes_change: { amount: number; currency: string };
+          fees_change: {
+            carrier: { amount: number; currency: string };
+            agency: { amount: number; currency: string };
+            external_agency: { amount: number; currency: string };
+          };
+          status:
+            | "NOT_STARTED"
+            | "PENDING_PAYMENT"
+            | "UNDER_REVIEW,"
+            | "APPROVED"
+            | "PAYMENT_NOT_COLLECTED"
+            | "NOT_NEEDED"
+            | "VOIDED"
+            | null;
+          pending_action: boolean;
+          invoice_external_id?: string;
+        } & { request_payment?: boolean },
+        { errors?: { source?: string; type: string; message: string }[] }
+      >({
+        path: `/servicing/policies/${id}/reinstatement`,
+        method: "POST",
+        body: data,
+        secure: true,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Apply audit to an existing policy
+     *
+     * @tags Servicing
+     * @name ApplyAudit
+     * @summary Apply audit to an existing policy
+     * @request POST:/servicing/policies/{id}/audit
+     * @secure
+     */
+    applyAudit: (id: string, data: ServicingCancellation, params: RequestParams = {}) =>
+      this.request<ServicingCancellation, { errors?: { source?: string; type: string; message: string }[] }>({
+        path: `/servicing/policies/${id}/audit`,
+        method: "POST",
+        body: data,
+        secure: true,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Close payments that were paid
+     *
+     * @tags Servicing
+     * @name ClosePaidPayment
+     * @summary Close payments that were paid
+     * @request POST:/servicing/endorsements/{id}/request_paid
+     * @secure
+     */
+    closePaidPayment: (
+      id: string,
+      data: {
+        data: {
+          payment_method?: string;
+          amount_collected?: { amount: number; currency: string };
+          payment_external_id?: string;
+        };
+        callback: { url?: string };
       },
       params: RequestParams = {},
     ) =>
       this.request<
         {
-          data?: {
-            description: string;
-            effective_date: string;
-            premium_change: { amount: number; currency: string };
-            taxes_change: { amount: number; currency: string };
-            fees_change: {
-              carrier: { amount: number; currency: string };
-              agency: { amount: number; currency: string };
-              external_agency: { amount: number; currency: string };
-            };
-            status:
-              | "Not started"
-              | "Pending payment"
-              | "Under review"
-              | "Approved"
-              | "Payment Not Collected"
-              | "Not needed"
-              | "Voided"
-              | null;
-            pending_action: boolean;
+          data: {
+            payment_method?: string;
+            amount_collected?: { amount: number; currency: string };
+            payment_external_id?: string;
           };
+          callback: { url?: string };
         },
-        { errors?: { source?: string; type: string; message: string }[] } | { message?: string }
+        { errors?: { source?: string; type: string; message: string }[] }
       >({
-        path: `/servicing/policies/${id}/reinstatement`,
+        path: `/servicing/endorsements/${id}/request_paid`,
+        method: "POST",
+        body: data,
+        secure: true,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Close payments that were not paid
+     *
+     * @tags Servicing
+     * @name CloseNotPaidPayment
+     * @summary Close payments that were not paid
+     * @request POST:/servicing/endorsements/{id}/request_not_paid
+     * @secure
+     */
+    closeNotPaidPayment: (id: string, data: { callback: { url?: string } }, params: RequestParams = {}) =>
+      this.request<{ callback: { url?: string } }, { errors?: { source?: string; type: string; message: string }[] }>({
+        path: `/servicing/endorsements/${id}/request_not_paid`,
         method: "POST",
         body: data,
         secure: true,
@@ -2553,7 +2669,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     createRequest: (
       data: {
         account_id: string;
-        type: "CERTIFICATE" | "MONEY_COLLECTION" | "BILLING";
+        type: "CERTIFICATE" | "MONEY_COLLECTION" | "BILLING" | "DOCUMENTATION";
         subject: string;
         description: string;
         policy_id?: string;
@@ -2565,7 +2681,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
         {
           data?: {
             account_id: string;
-            type: "CERTIFICATE" | "MONEY_COLLECTION" | "BILLING";
+            type: "CERTIFICATE" | "MONEY_COLLECTION" | "BILLING" | "DOCUMENTATION";
             subject: string;
             description: string;
             policy_id?: string;
@@ -2591,7 +2707,6 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @name SyncAgent
      * @summary Create or update agent
      * @request POST:/agents/sync
-     * @deprecated
      * @secure
      */
     syncAgent: (
@@ -2649,7 +2764,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
           industry?: { type?: "naics"; code?: string };
           addresses?: {
             type?: "mailing" | "billing";
-            address_line: string;
+            address_line?: string;
             city?: string;
             state?: string;
             country_code?: string;
@@ -2678,6 +2793,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
           }
         >;
         custom_fields?: { key?: string; value?: string }[];
+        other_information?: { key?: string; value?: string }[];
       },
       params: RequestParams = {},
     ) =>
