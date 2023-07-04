@@ -60,14 +60,74 @@ export interface Application {
       };
     }
   >;
-  custom_fields?: { key?: string; value?: string }[];
+  custom_fields?: { key: string; value: string }[];
 
   /**
    * Array of fields for information that does not fit into any of the other specific fields:
    *   * Maximum size: 10KB in total
    *
    */
-  other_information?: { key?: string; value?: string }[];
+  other_information?: { key: string; value: string }[];
+}
+
+export interface ApplicationV2 {
+  account: {
+    external_id?: string;
+    business_information: {
+      name: string;
+      type?: string;
+      website?: string;
+      identification_number?: string;
+      year_established?: number;
+      years_of_experience?: number;
+      annual_revenue?: { amount: number; currency: string };
+      fulltime_employees?: number;
+      parttime_employees?: number;
+      employees_annual_payroll?: number;
+    };
+    industry?: { type?: "naics"; code?: string };
+    addresses?: {
+      type?: "mailing" | "billing";
+      address_line?: string;
+      city?: string;
+      state?: string;
+      country_code?: string;
+      postal_code?: string;
+    }[];
+    email: string;
+    phone_number?: string;
+  };
+  contacts: {
+    relationship?: "primary" | "driver" | "owner" | "other";
+    first_name: string;
+    last_name: string;
+    email?: string;
+    communications_opt_out?: "email" | "sms" | "all" | "none";
+    contact_numbers?: { type: "phone" | "extension" | "mobile" | "fax" | "other"; number: string }[];
+  }[];
+  partnership: { id: string; lead_external_id?: string; source?: string };
+  insurance_details?: {
+    packages?: {
+      package_id: string;
+      coverages?: { coverage_id: string; current?: number | string | boolean; maximum?: number; minimum?: number }[];
+      lobs?: {
+        lob_id: string;
+        coverages?: { coverage_id: string; current?: number | string | boolean; maximum?: number; minimum?: number }[];
+      }[];
+    }[];
+    lobs?: {
+      lob_id: string;
+      coverages?: { coverage_id: string; current?: number | string | boolean; maximum?: number; minimum?: number }[];
+    }[];
+  };
+  custom_fields?: { key: string; value: string }[];
+
+  /**
+   * Array of fields for information that does not fit into any of the other specific fields:
+   *   * Maximum size: 10KB in total
+   *
+   */
+  other_information?: { key: string; value: string }[];
 }
 
 export interface Subscription {
@@ -128,10 +188,10 @@ export interface ServicingAccount {
     postal_code?: string;
   }[];
   contacts?: {
-    first_name: string;
-    last_name: string;
-    email: string;
-    contact_numbers: { type: "phone" | "extension" | "mobile" | "fax" | "other"; number: string }[];
+    first_name?: string;
+    last_name?: string;
+    email?: string;
+    contact_numbers?: { type: "phone" | "extension" | "mobile" | "fax" | "other"; number: string }[];
   }[];
 
   /**
@@ -246,6 +306,8 @@ export type ServicingAudit = {
     | null;
   pending_action: boolean;
   invoice_external_id?: string;
+} & { line_of_business?: { professional_liability?: { occurrence_limit?: number; aggregate_limit?: number } } } & {
+  request_payment?: boolean;
 };
 
 export interface ServicingRequestPaid {
@@ -254,11 +316,74 @@ export interface ServicingRequestPaid {
     amount_collected?: { amount: number; currency: string };
     payment_external_id?: string;
   };
-  callback: { url?: string };
+  callback: { url: string; headers?: { Authorization?: string } };
 }
 
 export interface ServicingRequestNotPaid {
-  callback: { url?: string };
+  callback: { url: string; headers?: { Authorization?: string } };
+}
+
+export interface AccountsSync {
+  data: {
+    id?: string;
+    external_id?: string;
+    business_information: { name: string };
+    addresses: {
+      type?: "mailing" | "billing";
+      address_line: string;
+      city?: string;
+      state?: string;
+      country_code?: string;
+      postal_code?: string;
+    }[];
+    contacts?: {
+      relationship?: "primary";
+      first_name: string;
+      last_name: string;
+      email: string;
+      communications_opt_out?: "none";
+      contact_numbers: { type: "phone" | "extension" | "mobile" | "fax" | "other"; number: string }[];
+    }[];
+    email: string;
+    phone_number: string;
+  };
+  callback: { url: string; headers?: { Authorization?: string } };
+}
+
+export interface PoliciesSync {
+  data: {
+    external_id: string;
+    policy_number?: string;
+    account_id?: string;
+    status: string;
+    effective_date: string;
+    expiration_date?: string;
+    cancellation_date?: string;
+    premium?: { amount: number; currency: string };
+    taxes?: { amount: number; currency: string };
+    fees?: { amount: number; currency: string };
+    purchase_type?: string;
+    renewal_flow?: string;
+    billing_carrier_id?: string;
+    issuing_carrier_id?: string;
+    intermediary_id?: string;
+    billing_type?: string;
+    invoiced_by?: string;
+    insurance_details?:
+      | {
+          packages: {
+            package_id: string;
+            coverages?: { coverage_id: string; current: number | string | boolean }[];
+            lobs?: { lob_id: string; coverages?: { coverage_id: string; current: number | string | boolean }[] }[];
+          }[];
+          lobs?: any[];
+        }
+      | {
+          packages?: any[];
+          lobs: { lob_id: string; coverages?: { coverage_id: string; current: number | string | boolean }[] }[];
+        };
+  };
+  callback: { url: string; headers?: { Authorization?: string } };
 }
 
 export type Commission = { id: string } & {
@@ -349,13 +474,14 @@ export type Policy = { id: string } & {
   policy_number?: string;
   account_id?: string;
   status?:
-    | "Pre-bind"
     | "Active"
-    | "Reinstated"
-    | "In cancellation process"
+    | "Cancelled"
+    | "Cancellation in Progress"
     | "Expired"
     | "Flat Cancelled"
-    | "Cancelled";
+    | "Pending"
+    | "Reinstated"
+    | "Under Review";
   effective_date?: string;
   expiration_date?: string;
   cancellation_date?: string;
@@ -372,7 +498,49 @@ export type Policy = { id: string } & {
   billing_type?: "Direct" | "Agency" | "Unknown";
   invoiced_by?: "Carrier" | "Coverwallet" | "Premium Finance Company" | "External PAS" | "Account Current" | "Unknown";
   line_of_business?: { professional_liability?: { occurrence_limit?: number; aggregate_limit?: number } };
-  policy_document_link?: string;
+};
+
+export type PolicyV2 = { id: string } & {
+  id?: string;
+  external_id?: string;
+  policy_number?: string;
+  account_id?: string;
+  status?:
+    | "Active"
+    | "Cancelled"
+    | "Cancellation in Progress"
+    | "Expired"
+    | "Flat Cancelled"
+    | "Pending"
+    | "Reinstated"
+    | "Under Review";
+  effective_date?: string;
+  expiration_date?: string;
+  cancellation_date?: string;
+  premium?: { amount: number; currency: string };
+  taxes?: { amount: number; currency: string };
+  fees?: { amount: number; currency: string };
+  insurance_details?:
+    | {
+        packages: {
+          package_id: string;
+          coverages?: { coverage_id: string; current: number | string | boolean }[];
+          lobs?: { lob_id: string; coverages?: { coverage_id: string; current: number | string | boolean }[] }[];
+        }[];
+        lobs?: any[];
+      }
+    | {
+        packages?: any[];
+        lobs: { lob_id: string; coverages?: { coverage_id: string; current: number | string | boolean }[] }[];
+      };
+  purchase_type?: "renewal_upload" | "renewal" | "new_business" | "cross_sell" | null;
+  renewal_flow?: "auto" | "nonauto" | null;
+  billing_carrier_id?: string;
+  issuing_carrier_id?: string;
+  finance_contract_number?: string;
+  intermediary_id?: string;
+  billing_type?: "Direct" | "Agency" | "Unknown";
+  invoiced_by?: "Carrier" | "Coverwallet" | "Premium Finance Company" | "External PAS" | "Account Current" | "Unknown";
 };
 
 export interface PolicyDocument {
@@ -422,6 +590,21 @@ export type Quote = { id: string } & {
     agency?: { amount: number; currency: string };
     external_agency?: { amount: number; currency: string };
   };
+  insurance_details?:
+    | {
+        packages: {
+          package_id: string;
+          coverages?: { coverage_id: string; current: number | string | boolean }[];
+          lobs?: { lob_id: string; coverages?: { coverage_id: string; current: number | string | boolean }[] }[];
+        }[];
+        lobs?: any[];
+      }
+    | {
+        packages?: any[];
+        lobs: { lob_id: string; coverages?: { coverage_id: string; current: number | string | boolean }[] }[];
+      };
+  issuing_carrier_id?: string;
+  billing_carrier_id?: string;
 };
 
 export interface CertificateSyncronization {
@@ -447,12 +630,49 @@ export interface CertificateSyncronization {
     internal_id?: string;
     size: number;
     type: "ADHOC" | "RENEWAL";
-    delivery_emails: any[];
+    delivery_emails: string[];
   };
 
   /** @example [{"lobs":[{"code":"EERI","name":"ERISA Bond"}]}] */
-  policies: any[];
+  policies: { lobs: { name: string; code: string }[] }[];
   callback?: { url?: string };
+}
+
+export interface CertificateGenerate {
+  data: {
+    certificate_lines: {
+      lob_id?: string;
+      holder_types?: {
+        key:
+          | "ADDITIONAL_INSURED"
+          | "PRIMARY_AND_NON_CONTRIBUTORY"
+          | "EVIDENCE_OF_INSURANCE"
+          | "WAIVER_OF_SUBROGATION"
+          | "LOSS_PAYEE"
+          | "MORTGAGEE";
+        additional_insured_attributes?: {
+          relation?:
+            | "bank_loss_payee"
+            | "bank_mortgagee"
+            | "client"
+            | "landlord"
+            | "governmental_authority"
+            | "supplier"
+            | "vendor"
+            | "other";
+          relation_description?: string;
+        };
+      }[];
+    }[];
+    certificate_holder?: {
+      name: string;
+      has_to_be_sent: boolean;
+      email?: string;
+      address?: { state: string; city: string; postal_code: string; address_line: string };
+    };
+    description_of_operation?: string;
+  };
+  callback: { url: string; headers?: { Authorization?: string } };
 }
 
 export interface AgentSynchronization {
@@ -551,10 +771,7 @@ export class HttpClient<SecurityDataType = unknown> {
   private format?: ResponseType;
 
   constructor({ securityWorker, secure, format, ...axiosConfig }: ApiConfig<SecurityDataType> = {}) {
-    this.instance = axios.create({
-      ...axiosConfig,
-      baseURL: axiosConfig.baseURL || "https://public-api.aoncover.biz/v1",
-    });
+    this.instance = axios.create({ ...axiosConfig, baseURL: axiosConfig.baseURL || "https://public-api.aoncover.biz" });
     this.secure = secure;
     this.format = format;
     this.securityWorker = securityWorker;
@@ -634,7 +851,7 @@ export class HttpClient<SecurityDataType = unknown> {
 /**
  * @title Coverwallet OpenAPI
  * @version 1.0.0
- * @baseUrl https://public-api.aoncover.biz/v1
+ * @baseUrl https://public-api.aoncover.biz
  *
  * ### Authentication
  *
@@ -686,14 +903,14 @@ export class HttpClient<SecurityDataType = unknown> {
  * </details>
  */
 export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDataType> {
-  oauth = {
+  v1 = {
     /**
      * @description Exchange your email and password by an access token that can be used to authenticate subsequent requests.
      *
      * @tags Authentication
      * @name GetAccessToken
      * @summary Get an access token
-     * @request POST:/oauth/token
+     * @request POST:/v1/oauth/token
      */
     getAccessToken: (
       data:
@@ -705,22 +922,21 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
         { access_token?: string; token_type?: string; expires_in?: number; scope?: string; created_at?: number },
         { errors?: { source?: string; type: string; message: string }[] }
       >({
-        path: `/oauth/token`,
+        path: `/v1/oauth/token`,
         method: "POST",
         body: data,
         type: ContentType.Json,
         format: "json",
         ...params,
       }),
-  };
-  accounts = {
+
     /**
      * @description Add a new account
      *
      * @tags Account
      * @name AddAccount
      * @summary Add a new account
-     * @request POST:/accounts
+     * @request POST:/v1/accounts
      * @secure
      */
     addAccount: (
@@ -795,7 +1011,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
         },
         { errors?: { source?: string; type: string; message: string }[] }
       >({
-        path: `/accounts`,
+        path: `/v1/accounts`,
         method: "POST",
         body: data,
         secure: true,
@@ -810,7 +1026,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @tags Account
      * @name ListAccountByExternalId
      * @summary Fetch an account
-     * @request GET:/accounts
+     * @request GET:/v1/accounts
      * @secure
      */
     listAccountByExternalId: (query: { external_id: string }, params: RequestParams = {}) =>
@@ -851,7 +1067,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
         },
         { errors?: { source?: string; type: string; message: string }[] }
       >({
-        path: `/accounts`,
+        path: `/v1/accounts`,
         method: "GET",
         query: query,
         secure: true,
@@ -865,7 +1081,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @tags Account
      * @name GetAccount
      * @summary Fetch an account
-     * @request GET:/accounts/{id}
+     * @request GET:/v1/accounts/{id}
      * @secure
      */
     getAccount: (id: string, params: RequestParams = {}) =>
@@ -906,7 +1122,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
         },
         { errors?: { source?: string; type: string; message: string }[] }
       >({
-        path: `/accounts/${id}`,
+        path: `/v1/accounts/${id}`,
         method: "GET",
         secure: true,
         format: "json",
@@ -919,7 +1135,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @tags Account
      * @name UpdateAccount
      * @summary Update an account
-     * @request PATCH:/accounts/{id}
+     * @request PATCH:/v1/accounts/{id}
      * @secure
      */
     updateAccount: (
@@ -995,7 +1211,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
         },
         { errors?: { source?: string; type: string; message: string }[] }
       >({
-        path: `/accounts/${id}`,
+        path: `/v1/accounts/${id}`,
         method: "PATCH",
         body: data,
         secure: true,
@@ -1009,8 +1225,8 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      *
      * @tags Account
      * @name DeprecatedAddContact
-     * @summary Add a contact. Deprecated in favor of "POST /contacts"
-     * @request POST:/accounts/{id}/contacts
+     * @summary Add a contact. This operation is deprecated in favor of "POST /contacts"
+     * @request POST:/v1/accounts/{id}/contacts
      * @deprecated
      * @secure
      */
@@ -1039,7 +1255,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
         },
         { errors?: { source?: string; type: string; message: string }[] }
       >({
-        path: `/accounts/${id}/contacts`,
+        path: `/v1/accounts/${id}/contacts`,
         method: "POST",
         body: data,
         secure: true,
@@ -1052,12 +1268,13 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @description Retrieve policies of an account
      *
      * @tags Account
-     * @name PoliciesDetail
+     * @name AccountsPoliciesDetail
      * @summary Retrieve policies of an account
-     * @request GET:/accounts/{id}/policies
+     * @request GET:/v1/accounts/{id}/policies
+     * @deprecated
      * @secure
      */
-    policiesDetail: (id: string, params: RequestParams = {}) =>
+    accountsPoliciesDetail: (id: string, params: RequestParams = {}) =>
       this.request<
         {
           data?: {
@@ -1066,13 +1283,14 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
             policy_number?: string;
             account_id?: string;
             status?:
-              | "Pre-bind"
               | "Active"
-              | "Reinstated"
-              | "In cancellation process"
+              | "Cancelled"
+              | "Cancellation in Progress"
               | "Expired"
               | "Flat Cancelled"
-              | "Cancelled";
+              | "Pending"
+              | "Reinstated"
+              | "Under Review";
             effective_date?: string;
             expiration_date?: string;
             cancellation_date?: string;
@@ -1095,12 +1313,11 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
               | "Account Current"
               | "Unknown";
             line_of_business?: { professional_liability?: { occurrence_limit?: number; aggregate_limit?: number } };
-            policy_document_link?: string;
           }[];
         },
         { errors?: { source?: string; type: string; message: string }[] }
       >({
-        path: `/accounts/${id}/policies`,
+        path: `/v1/accounts/${id}/policies`,
         method: "GET",
         secure: true,
         format: "json",
@@ -1113,7 +1330,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @tags Account
      * @name SetServicing
      * @summary Set servicing data
-     * @request POST:/accounts/{id}/servicing
+     * @request POST:/v1/accounts/{id}/servicing
      * @secure
      */
     setServicing: (
@@ -1139,7 +1356,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
         },
         { errors?: { source?: string; type: string; message: string }[] }
       >({
-        path: `/accounts/${id}/servicing`,
+        path: `/v1/accounts/${id}/servicing`,
         method: "POST",
         body: data,
         secure: true,
@@ -1149,100 +1366,77 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
       }),
 
     /**
-     * @description Create a new certificate
+     * @description Retrieve quotes of an account
      *
-     * @tags Account, Certificates
-     * @name AddAccountDocumentCertificate
-     * @summary Create a new certificate
-     * @request POST:/accounts/{id}/certificates
-     * @deprecated
+     * @tags Account
+     * @name AccountsQuotesDetail
+     * @summary Retrieve quotes of an account
+     * @request GET:/v1/accounts/{id}/quotes
      * @secure
      */
-    addAccountDocumentCertificate: (
-      id: string,
-      data: {
-        certificate: {
-          external_id: string;
-          document: string;
-          effective_date: string;
-          expiration_date: string;
-          certificate_holder: {
-            name: string;
-            address: {
-              type?: "mailing" | "billing";
-              address_line: string;
-              city?: string;
-              state?: string;
-              country_code?: string;
-              postal_code?: string;
+    accountsQuotesDetail: (id: string, params: RequestParams = {}) =>
+      this.request<
+        {
+          data?: ({ id: string } & {
+            external_id?: string;
+            account_id?: string;
+            insurance_type?: string;
+            policy_ids?: string[];
+            name?: string;
+            stage?:
+              | "NON_QUOTED"
+              | "PENDING_CUSTOMER_INFORMATION"
+              | "QUOTED_PENDING_PRODUCER"
+              | "QUOTED_PENDING_APPROVAL"
+              | "QUOTED_AVAILABLE_TO_PURCHASE"
+              | "PURCHASED"
+              | "REJECTED";
+            premium?: { amount: number; currency: string };
+            taxes?: { amount: number; currency: string };
+            effective_date?: string;
+            expiration_date?: string;
+            fees?: {
+              carrier?: { amount: number; currency: string };
+              agency?: { amount: number; currency: string };
+              external_agency?: { amount: number; currency: string };
             };
-          };
-        };
-        request: {
-          external_id: string;
-          internal_id?: string;
-          size: number;
-          type: "ADHOC" | "RENEWAL";
-          delivery_emails: any[];
-        };
-        policies: any[];
-        callback?: { url?: string };
-      },
-      params: RequestParams = {},
-    ) =>
-      this.request<{ process: { id: string } }, { errors?: { source?: string; type: string; message: string }[] }>({
-        path: `/accounts/${id}/certificates`,
-        method: "POST",
-        body: data,
+            insurance_details?:
+              | {
+                  packages: {
+                    package_id: string;
+                    coverages?: { coverage_id: string; current: number | string | boolean }[];
+                    lobs?: {
+                      lob_id: string;
+                      coverages?: { coverage_id: string; current: number | string | boolean }[];
+                    }[];
+                  }[];
+                  lobs?: any[];
+                }
+              | {
+                  packages?: any[];
+                  lobs: { lob_id: string; coverages?: { coverage_id: string; current: number | string | boolean }[] }[];
+                };
+            issuing_carrier_id?: string;
+            billing_carrier_id?: string;
+          })[];
+        },
+        { errors?: { source?: string; type: string; message: string }[] }
+      >({
+        path: `/v1/accounts/${id}/quotes`,
+        method: "GET",
         secure: true,
-        type: ContentType.Json,
         format: "json",
         ...params,
       }),
 
-    /**
-     * @description Create a new invoice
-     *
-     * @tags Account, Invoices
-     * @name AddAccountDocumentInvoice
-     * @summary Create a new invoice
-     * @request POST:/accounts/{id}/invoices
-     * @secure
-     */
-    addAccountDocumentInvoice: (
-      id: string,
-      data: {
-        data: {
-          invoice: {
-            external_id: string;
-            document_number: string;
-            document: string;
-            billing_date: string;
-            total: { amount: number; currency: string };
-          };
-          lines: { policy_id: string; transaction: { effective_date: string } }[];
-        };
-      },
-      params: RequestParams = {},
-    ) =>
-      this.request<{ status?: string }, { errors?: { source?: string; type: string; message: string }[] }>({
-        path: `/accounts/${id}/invoices`,
-        method: "POST",
-        body: data,
-        secure: true,
-        type: ContentType.Json,
-        format: "json",
-        ...params,
-      }),
-  };
-  policies = {
     /**
      * @description This endpoints creates a new policy and returns the data of the policy created including the policy_id that needs to be used later for policy updates. The external_id field should be unique
      *
      * @tags Policy
      * @name AddPolicy
      * @summary Add a new policy
-     * @request POST:/policies
+     * @request POST:/v1/policies
+     * @deprecated
      * @secure
      */
     addPolicy: (
@@ -1252,13 +1446,14 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
         policy_number?: string;
         account_id?: string;
         status?:
-          | "Pre-bind"
           | "Active"
-          | "Reinstated"
-          | "In cancellation process"
+          | "Cancelled"
+          | "Cancellation in Progress"
           | "Expired"
           | "Flat Cancelled"
-          | "Cancelled";
+          | "Pending"
+          | "Reinstated"
+          | "Under Review";
         effective_date?: string;
         expiration_date?: string;
         cancellation_date?: string;
@@ -1281,7 +1476,6 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
           | "Account Current"
           | "Unknown";
         line_of_business?: { professional_liability?: { occurrence_limit?: number; aggregate_limit?: number } };
-        policy_document_link?: string;
       },
       params: RequestParams = {},
     ) =>
@@ -1293,13 +1487,14 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
             policy_number?: string;
             account_id?: string;
             status?:
-              | "Pre-bind"
               | "Active"
-              | "Reinstated"
-              | "In cancellation process"
+              | "Cancelled"
+              | "Cancellation in Progress"
               | "Expired"
               | "Flat Cancelled"
-              | "Cancelled";
+              | "Pending"
+              | "Reinstated"
+              | "Under Review";
             effective_date?: string;
             expiration_date?: string;
             cancellation_date?: string;
@@ -1322,12 +1517,11 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
               | "Account Current"
               | "Unknown";
             line_of_business?: { professional_liability?: { occurrence_limit?: number; aggregate_limit?: number } };
-            policy_document_link?: string;
           };
         },
         { errors?: { source?: string; type: string; message: string }[] }
       >({
-        path: `/policies`,
+        path: `/v1/policies`,
         method: "POST",
         body: data,
         secure: true,
@@ -1342,7 +1536,8 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @tags Policy
      * @name ListPoliciesByFilter
      * @summary Fetch policies filtered by query params
-     * @request GET:/policies
+     * @request GET:/v1/policies
+     * @deprecated
      * @secure
      */
     listPoliciesByFilter: (
@@ -1357,13 +1552,14 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
             policy_number?: string;
             account_id?: string;
             status?:
-              | "Pre-bind"
               | "Active"
-              | "Reinstated"
-              | "In cancellation process"
+              | "Cancelled"
+              | "Cancellation in Progress"
               | "Expired"
               | "Flat Cancelled"
-              | "Cancelled";
+              | "Pending"
+              | "Reinstated"
+              | "Under Review";
             effective_date?: string;
             expiration_date?: string;
             cancellation_date?: string;
@@ -1386,12 +1582,11 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
               | "Account Current"
               | "Unknown";
             line_of_business?: { professional_liability?: { occurrence_limit?: number; aggregate_limit?: number } };
-            policy_document_link?: string;
           })[];
         },
         { errors?: { source?: string; type: string; message: string }[] }
       >({
-        path: `/policies`,
+        path: `/v1/policies`,
         method: "GET",
         query: query,
         secure: true,
@@ -1405,7 +1600,8 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @tags Policy
      * @name GetPolicy
      * @summary Fetch a policy
-     * @request GET:/policies/{id}
+     * @request GET:/v1/policies/{id}
+     * @deprecated
      * @secure
      */
     getPolicy: (id: string, params: RequestParams = {}) =>
@@ -1417,13 +1613,14 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
             policy_number?: string;
             account_id?: string;
             status?:
-              | "Pre-bind"
               | "Active"
-              | "Reinstated"
-              | "In cancellation process"
+              | "Cancelled"
+              | "Cancellation in Progress"
               | "Expired"
               | "Flat Cancelled"
-              | "Cancelled";
+              | "Pending"
+              | "Reinstated"
+              | "Under Review";
             effective_date?: string;
             expiration_date?: string;
             cancellation_date?: string;
@@ -1446,12 +1643,11 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
               | "Account Current"
               | "Unknown";
             line_of_business?: { professional_liability?: { occurrence_limit?: number; aggregate_limit?: number } };
-            policy_document_link?: string;
           })[];
         },
         { errors?: { source?: string; type: string; message: string }[] }
       >({
-        path: `/policies/${id}`,
+        path: `/v1/policies/${id}`,
         method: "GET",
         secure: true,
         format: "json",
@@ -1462,12 +1658,12 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @description Retrieve endorsements of a policy
      *
      * @tags Policy
-     * @name EndorsementsDetail
+     * @name PoliciesEndorsementsDetail
      * @summary Retrieve endorsements of a policy
-     * @request GET:/policies/{id}/endorsements
+     * @request GET:/v1/policies/{id}/endorsements
      * @secure
      */
-    endorsementsDetail: (id: string, params: RequestParams = {}) =>
+    policiesEndorsementsDetail: (id: string, params: RequestParams = {}) =>
       this.request<
         {
           data?: { id: string } & {
@@ -1503,7 +1699,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
         },
         { errors?: { source?: string; type: string; message: string }[] }
       >({
-        path: `/policies/${id}/endorsements`,
+        path: `/v1/policies/${id}/endorsements`,
         method: "GET",
         secure: true,
         format: "json",
@@ -1516,7 +1712,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @tags Policy
      * @name ListPolicyPayments
      * @summary Fetch a list of policy payments
-     * @request GET:/policies/{id}/payments
+     * @request GET:/v1/policies/{id}/payments
      * @secure
      */
     listPolicyPayments: (id: string, params: RequestParams = {}) =>
@@ -1541,7 +1737,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
         },
         any
       >({
-        path: `/policies/${id}/payments`,
+        path: `/v1/policies/${id}/payments`,
         method: "GET",
         secure: true,
         format: "json",
@@ -1552,17 +1748,21 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @description Create document of a policy
      *
      * @tags Policy
-     * @name DocumentsPolicyCreate
+     * @name PoliciesDocumentsPolicyCreate
      * @summary Create document of a policy
-     * @request POST:/policies/{id}/documents/policy
+     * @request POST:/v1/policies/{id}/documents/policy
      * @secure
      */
-    documentsPolicyCreate: (id: string, data: { file?: string; create_date?: string }, params: RequestParams = {}) =>
+    policiesDocumentsPolicyCreate: (
+      id: string,
+      data: { file?: string; create_date?: string },
+      params: RequestParams = {},
+    ) =>
       this.request<
         { data?: { id: string } & { create_date?: string } },
         { errors?: { source?: string; type: string; message: string }[] }
       >({
-        path: `/policies/${id}/documents/policy`,
+        path: `/v1/policies/${id}/documents/policy`,
         method: "POST",
         body: data,
         secure: true,
@@ -1570,78 +1770,99 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
         format: "json",
         ...params,
       }),
-  };
-  carriers = {
+
     /**
      * @description Fetch carriers list
      *
      * @tags Catalog
      * @name ListCarriers
      * @summary Fetch carriers list
-     * @request GET:/carriers
-     * @secure
+     * @request GET:/v1/carriers
      */
     listCarriers: (params: RequestParams = {}) =>
       this.request<
         { data?: { name?: string; id?: string }[] },
         { errors?: { source?: string; type: string; message: string }[] }
       >({
-        path: `/carriers`,
+        path: `/v1/carriers`,
         method: "GET",
-        secure: true,
         format: "json",
         ...params,
       }),
-  };
-  insuranceTypes = {
+
     /**
      * @description Fetch insurance types list
      *
      * @tags Catalog
      * @name ListInsuranceTypes
      * @summary Fetch insurance types list
-     * @request GET:/insurance_types
-     * @secure
+     * @request GET:/v1/insurance_types
      */
     listInsuranceTypes: (params: RequestParams = {}) =>
       this.request<
         { data?: { name?: string; id?: string }[] },
         { errors?: { source?: string; type: string; message: string }[] }
       >({
-        path: `/insurance_types`,
+        path: `/v1/insurance_types`,
         method: "GET",
-        secure: true,
         format: "json",
         ...params,
       }),
-  };
-  intermediaries = {
+
+    /**
+     * @description Fetch coverages list
+     *
+     * @tags Catalog
+     * @name ListInsuranceTypeCoverages
+     * @summary Fetch coverages list for an insurance type
+     * @request GET:/v1/insurance_types/{id}/coverages
+     */
+    listInsuranceTypeCoverages: (id: string, params: RequestParams = {}) =>
+      this.request<
+        {
+          data?: {
+            name?: string;
+            id?: string;
+            coverages?: {
+              id?: string;
+              name?: string;
+              key?: string;
+              description?: string;
+              type?: number | string | boolean;
+            }[];
+          };
+        },
+        { errors?: { source?: string; type: string; message: string }[] }
+      >({
+        path: `/v1/insurance_types/${id}/coverages`,
+        method: "GET",
+        format: "json",
+        ...params,
+      }),
+
     /**
      * @description Fetch intermediaries list
      *
      * @tags Catalog
      * @name ListIntermediaries
      * @summary Fetch intermediaries list
-     * @request GET:/intermediaries
-     * @secure
+     * @request GET:/v1/intermediaries
      */
     listIntermediaries: (params: RequestParams = {}) =>
       this.request<{ data?: { name?: string; id?: string }[] }, any>({
-        path: `/intermediaries`,
+        path: `/v1/intermediaries`,
         method: "GET",
-        secure: true,
         format: "json",
         ...params,
       }),
-  };
-  subscriptions = {
+
     /**
      * @description Add a new subscription
      *
      * @tags Subscriptions
      * @name AddSubscription
      * @summary Add a new subscription
-     * @request POST:/subscriptions
+     * @request POST:/v1/subscriptions
      * @secure
      */
     addSubscription: (
@@ -1662,7 +1883,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
         },
         { errors?: { source?: string; type: string; message: string }[] }
       >({
-        path: `/subscriptions`,
+        path: `/v1/subscriptions`,
         method: "POST",
         body: data,
         secure: true,
@@ -1677,7 +1898,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @tags Subscriptions
      * @name ListSubscriptions
      * @summary List all subscriptions
-     * @request GET:/subscriptions
+     * @request GET:/v1/subscriptions
      * @secure
      */
     listSubscriptions: (query?: { type?: "ephemeral" | "persistent" | "all" }, params: RequestParams = {}) =>
@@ -1691,7 +1912,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
         },
         any
       >({
-        path: `/subscriptions`,
+        path: `/v1/subscriptions`,
         method: "GET",
         query: query,
         secure: true,
@@ -1705,7 +1926,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @tags Subscriptions
      * @name RotateSigningKey
      * @summary Rotate signing_key for subscription
-     * @request PUT:/subscriptions/{id}/rotate_key
+     * @request PUT:/v1/subscriptions/{id}/rotate_key
      * @secure
      */
     rotateSigningKey: (id: string, params: RequestParams = {}) =>
@@ -1719,7 +1940,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
         },
         { errors?: { source?: string; type: string; message: string }[] }
       >({
-        path: `/subscriptions/${id}/rotate_key`,
+        path: `/v1/subscriptions/${id}/rotate_key`,
         method: "PUT",
         secure: true,
         format: "json",
@@ -1732,7 +1953,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @tags Subscriptions
      * @name UpdateSubscription
      * @summary Update subscription
-     * @request PUT:/subscriptions/{id}
+     * @request PUT:/v1/subscriptions/{id}
      * @secure
      */
     updateSubscription: (
@@ -1754,7 +1975,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
         },
         { errors?: { source?: string; type: string; message: string }[] }
       >({
-        path: `/subscriptions/${id}`,
+        path: `/v1/subscriptions/${id}`,
         method: "PUT",
         body: data,
         secure: true,
@@ -1769,7 +1990,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @tags Subscriptions
      * @name DeleteSubscription
      * @summary Delete subscription
-     * @request DELETE:/subscriptions/{id}
+     * @request DELETE:/v1/subscriptions/{id}
      * @secure
      */
     deleteSubscription: (id: string, params: RequestParams = {}) =>
@@ -1783,21 +2004,20 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
         },
         { errors?: { source?: string; type: string; message: string }[] }
       >({
-        path: `/subscriptions/${id}`,
+        path: `/v1/subscriptions/${id}`,
         method: "DELETE",
         secure: true,
         format: "json",
         ...params,
       }),
-  };
-  paymentMethods = {
+
     /**
      * @description Add a new payment method
      *
      * @tags Payment methods
      * @name AddPaymentMethod
      * @summary Add a new payment method
-     * @request POST:/payment_methods
+     * @request POST:/v1/payment_methods
      * @secure
      */
     addPaymentMethod: (
@@ -1805,7 +2025,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
       params: RequestParams = {},
     ) =>
       this.request<{ data?: { type: "credit_card"; provider: "stripe"; token: string; account_id: string } }, void>({
-        path: `/payment_methods`,
+        path: `/v1/payment_methods`,
         method: "POST",
         body: data,
         secure: true,
@@ -1813,15 +2033,14 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
         format: "json",
         ...params,
       }),
-  };
-  payments = {
+
     /**
      * @description Fetch a payment by ID
      *
      * @tags Payments
      * @name GetPayment
      * @summary Fetch a payment
-     * @request GET:/payments/{id}
+     * @request GET:/v1/payments/{id}
      * @secure
      */
     getPayment: (id: string, params: RequestParams = {}) =>
@@ -1846,21 +2065,20 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
         },
         { errors?: { source?: string; type: string; message: string }[] }
       >({
-        path: `/payments/${id}`,
+        path: `/v1/payments/${id}`,
         method: "GET",
         secure: true,
         format: "json",
         ...params,
       }),
-  };
-  paymentTransactions = {
+
     /**
      * @description Fetch a payment transaction by external (Stripe) ID
      *
      * @tags Payment Transactions
      * @name GetPaymentTransaction
      * @summary Fetch a payment transaction
-     * @request GET:/payment_transactions/{id}
+     * @request GET:/v1/payment_transactions/{id}
      * @secure
      */
     getPaymentTransaction: (id: string, params: RequestParams = {}) =>
@@ -1880,7 +2098,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
         },
         { errors?: { source?: string; type: string; message: string }[] }
       >({
-        path: `/payment_transactions/${id}`,
+        path: `/v1/payment_transactions/${id}`,
         method: "GET",
         secure: true,
         format: "json",
@@ -1893,7 +2111,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @tags Payment Transactions
      * @name CreateRefund
      * @summary Create a refund for a payment
-     * @request POST:/payment_transactions/{id}/refunds
+     * @request POST:/v1/payment_transactions/{id}/refunds
      * @secure
      */
     createRefund: (
@@ -1924,7 +2142,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
         },
         { errors?: { source?: string; type: string; message: string }[] }
       >({
-        path: `/payment_transactions/${id}/refunds`,
+        path: `/v1/payment_transactions/${id}/refunds`,
         method: "POST",
         body: data,
         secure: true,
@@ -1932,15 +2150,14 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
         format: "json",
         ...params,
       }),
-  };
-  quotes = {
+
     /**
      * @description Fetch an existing quote by ID.
      *
      * @tags Quote
      * @name GetQuote
      * @summary Fetch a quote
-     * @request GET:/quotes/{id}
+     * @request GET:/v1/quotes/{id}
      * @secure
      */
     getQuote: (id: string, params: RequestParams = {}) =>
@@ -1969,11 +2186,29 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
               agency?: { amount: number; currency: string };
               external_agency?: { amount: number; currency: string };
             };
+            insurance_details?:
+              | {
+                  packages: {
+                    package_id: string;
+                    coverages?: { coverage_id: string; current: number | string | boolean }[];
+                    lobs?: {
+                      lob_id: string;
+                      coverages?: { coverage_id: string; current: number | string | boolean }[];
+                    }[];
+                  }[];
+                  lobs?: any[];
+                }
+              | {
+                  packages?: any[];
+                  lobs: { lob_id: string; coverages?: { coverage_id: string; current: number | string | boolean }[] }[];
+                };
+            issuing_carrier_id?: string;
+            billing_carrier_id?: string;
           })[];
         },
         { errors?: { source?: string; type: string; message: string }[] }
       >({
-        path: `/quotes/${id}`,
+        path: `/v1/quotes/${id}`,
         method: "GET",
         secure: true,
         format: "json",
@@ -1986,7 +2221,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @tags Quote
      * @name PatchQuote
      * @summary Partially update a quote
-     * @request PATCH:/quotes/{id}
+     * @request PATCH:/v1/quotes/{id}
      * @secure
      */
     patchQuote: (
@@ -2013,7 +2248,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
         { data?: { operation_id?: string; status?: "processing" } },
         { errors?: { source?: string; type: string; message: string }[] }
       >({
-        path: `/quotes/${id}`,
+        path: `/v1/quotes/${id}`,
         method: "PATCH",
         body: data,
         secure: true,
@@ -2028,7 +2263,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @tags Quote
      * @name ListQuotes
      * @summary Fetch list of quotes
-     * @request GET:/quotes
+     * @request GET:/v1/quotes
      * @secure
      */
     listQuotes: (query: { external_id: string; effective_date?: string }, params: RequestParams = {}) =>
@@ -2057,11 +2292,29 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
               agency?: { amount: number; currency: string };
               external_agency?: { amount: number; currency: string };
             };
+            insurance_details?:
+              | {
+                  packages: {
+                    package_id: string;
+                    coverages?: { coverage_id: string; current: number | string | boolean }[];
+                    lobs?: {
+                      lob_id: string;
+                      coverages?: { coverage_id: string; current: number | string | boolean }[];
+                    }[];
+                  }[];
+                  lobs?: any[];
+                }
+              | {
+                  packages?: any[];
+                  lobs: { lob_id: string; coverages?: { coverage_id: string; current: number | string | boolean }[] }[];
+                };
+            issuing_carrier_id?: string;
+            billing_carrier_id?: string;
           })[];
         },
         { errors?: { source?: string; type: string; message: string }[] }
       >({
-        path: `/quotes`,
+        path: `/v1/quotes`,
         method: "GET",
         query: query,
         secure: true,
@@ -2075,42 +2328,55 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @tags Quote
      * @name QuotesCreate
      * @summary Add a new quote
-     * @request POST:/quotes
+     * @request POST:/v1/quotes
      * @secure
      */
     quotesCreate: (
       data: {
         data: {
-          external_id: string;
+          external_id?: string;
           account_id: string;
-          expiring_policy_id: string;
-          policy_ids: string[];
-          name: string;
-          stage:
-            | "NON_QUOTED"
+          expiring_policy_id?: string;
+          policy_ids?: string[];
+          stage?:
             | "PENDING_CUSTOMER_INFORMATION"
             | "QUOTED_PENDING_PRODUCER"
             | "QUOTED_PENDING_APPROVAL"
-            | "QUOTED_AVAILABLE_TO_PURCHASE"
-            | "PURCHASED"
-            | "REJECTED";
-          renewal_type: "new" | "renewal";
-          premium: { amount: number; currency: string };
-          taxes: { amount: number; currency: string };
-          effective_date: string;
-          expiration_date: string;
-          fees: {
+            | "QUOTED_AVAILABLE_TO_PURCHASE";
+          premium?: { amount: number; currency: string };
+          taxes?: { amount: number; currency: string };
+          effective_date?: string;
+          expiration_date?: string;
+          fees?: {
             carrier?: { amount: number; currency: string };
             agency?: { amount: number; currency: string };
             external_agency?: { amount: number; currency: string };
           };
+          insurance_details:
+            | {
+                packages: {
+                  package_id: string;
+                  coverages?: { coverage_id: string; current: number | string | boolean }[];
+                  lobs?: {
+                    lob_id: string;
+                    coverages?: { coverage_id: string; current: number | string | boolean }[];
+                  }[];
+                }[];
+                lobs?: any[];
+              }
+            | {
+                packages?: any[];
+                lobs: { lob_id: string; coverages?: { coverage_id: string; current: number | string | boolean }[] }[];
+              };
+          issuing_carrier_id: string;
+          billing_carrier_id?: string;
         };
         callback: { url: string };
       },
       params: RequestParams = {},
     ) =>
       this.request<{ process: { id: string } }, { errors?: { source?: string; type: string; message: string }[] }>({
-        path: `/quotes`,
+        path: `/v1/quotes`,
         method: "POST",
         body: data,
         secure: true,
@@ -2125,31 +2391,34 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @tags Quote
      * @name UpdateQuote
      * @summary Sync a quote
-     * @request POST:/quotes/{id}/bind
+     * @request POST:/v1/quotes/{id}/bind
      * @secure
      */
     updateQuote: (
       id: string,
-      data: { policy: { number: string }; invoice: { paid_by: "insured" } },
+      data: {
+        data: { policy: { number: string }; invoice: { invoiced_by: "Carrier" | "External PAS" } };
+        callback: { url: string };
+      },
       params: RequestParams = {},
     ) =>
-      this.request<void, { errors?: { source?: string; type: string; message: string }[] }>({
-        path: `/quotes/${id}/bind`,
+      this.request<{ process: { id: string } }, { errors?: { source?: string; type: string; message: string }[] }>({
+        path: `/v1/quotes/${id}/bind`,
         method: "POST",
         body: data,
         secure: true,
         type: ContentType.Json,
+        format: "json",
         ...params,
       }),
-  };
-  endorsements = {
+
     /**
      * @description Fetch an endorsement by ID
      *
      * @tags Endorsements
      * @name GetEndorsement
      * @summary Fetch an endorsement
-     * @request GET:/endorsements/{id}
+     * @request GET:/v1/endorsements/{id}
      * @secure
      */
     getEndorsement: (id: string, params: RequestParams = {}) =>
@@ -2188,7 +2457,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
         },
         { errors?: { source?: string; type: string; message: string }[] }
       >({
-        path: `/endorsements/${id}`,
+        path: `/v1/endorsements/${id}`,
         method: "GET",
         secure: true,
         format: "json",
@@ -2201,7 +2470,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @tags Comissions
      * @name GetEndorsementCommissions
      * @summary Fetch the commissions applied over an endorsement
-     * @request GET:/endorsements/{id}/commissions
+     * @request GET:/v1/endorsements/{id}/commissions
      * @secure
      */
     getEndorsementCommissions: (id: string, params: RequestParams = {}) =>
@@ -2218,7 +2487,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
         },
         { errors?: { source?: string; type: string; message: string }[] }
       >({
-        path: `/endorsements/${id}/commissions`,
+        path: `/v1/endorsements/${id}/commissions`,
         method: "GET",
         secure: true,
         format: "json",
@@ -2231,7 +2500,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @tags Endorsements
      * @name ListEndorsementPayments
      * @summary Fetch a list of endorsement payments
-     * @request GET:/endorsements/{id}/payments
+     * @request GET:/v1/endorsements/{id}/payments
      * @secure
      */
     listEndorsementPayments: (id: string, params: RequestParams = {}) =>
@@ -2256,21 +2525,20 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
         },
         any
       >({
-        path: `/endorsements/${id}/payments`,
+        path: `/v1/endorsements/${id}/payments`,
         method: "GET",
         secure: true,
         format: "json",
         ...params,
       }),
-  };
-  contacts = {
+
     /**
      * @description Add a contact
      *
      * @tags Contact
      * @name AddContact
      * @summary Add a contact
-     * @request POST:/contacts
+     * @request POST:/v1/contacts
      * @secure
      */
     addContact: (
@@ -2297,7 +2565,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
         },
         { errors?: { source?: string; type: string; message: string }[] }
       >({
-        path: `/contacts`,
+        path: `/v1/contacts`,
         method: "POST",
         body: data,
         secure: true,
@@ -2312,7 +2580,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @tags Contact
      * @name UpdateContact
      * @summary Update a contact
-     * @request PATCH:/contacts/{id}
+     * @request PATCH:/v1/contacts/{id}
      * @secure
      */
     updateContact: (
@@ -2340,7 +2608,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
         },
         { errors?: { source?: string; type: string; message: string }[] }
       >({
-        path: `/contacts/${id}`,
+        path: `/v1/contacts/${id}`,
         method: "PATCH",
         body: data,
         secure: true,
@@ -2348,15 +2616,180 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
         format: "json",
         ...params,
       }),
-  };
-  servicing = {
+
+    /**
+     * @description Create a new certificate
+     *
+     * @tags Account, Certificates
+     * @name AddAccountDocumentCertificate
+     * @summary Create a new certificate
+     * @request POST:/v1/accounts/{id}/certificates
+     * @deprecated
+     * @secure
+     */
+    addAccountDocumentCertificate: (
+      id: string,
+      data: {
+        certificate: {
+          external_id: string;
+          document: string;
+          effective_date: string;
+          expiration_date: string;
+          certificate_holder: {
+            name: string;
+            address: {
+              type?: "mailing" | "billing";
+              address_line: string;
+              city?: string;
+              state?: string;
+              country_code?: string;
+              postal_code?: string;
+            };
+          };
+        };
+        request: {
+          external_id: string;
+          internal_id?: string;
+          size: number;
+          type: "ADHOC" | "RENEWAL";
+          delivery_emails: string[];
+        };
+        policies: { lobs: { name: string; code: string }[] }[];
+        callback?: { url?: string };
+      },
+      params: RequestParams = {},
+    ) =>
+      this.request<{ process: { id: string } }, { errors?: { source?: string; type: string; message: string }[] }>({
+        path: `/v1/accounts/${id}/certificates`,
+        method: "POST",
+        body: data,
+        secure: true,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Third party request to generate certificate
+     *
+     * @tags Certificates
+     * @name CertificateGenerate
+     * @summary Third party request to generate certificate
+     * @request POST:/v1/accounts/{id}/certificates/generate
+     * @secure
+     */
+    certificateGenerate: (
+      id: string,
+      data: {
+        data: {
+          certificate_lines: {
+            lob_id?: string;
+            holder_types?: {
+              key:
+                | "ADDITIONAL_INSURED"
+                | "PRIMARY_AND_NON_CONTRIBUTORY"
+                | "EVIDENCE_OF_INSURANCE"
+                | "WAIVER_OF_SUBROGATION"
+                | "LOSS_PAYEE"
+                | "MORTGAGEE";
+              additional_insured_attributes?: {
+                relation?:
+                  | "bank_loss_payee"
+                  | "bank_mortgagee"
+                  | "client"
+                  | "landlord"
+                  | "governmental_authority"
+                  | "supplier"
+                  | "vendor"
+                  | "other";
+                relation_description?: string;
+              };
+            }[];
+          }[];
+          certificate_holder?: {
+            name: string;
+            has_to_be_sent: boolean;
+            email?: string;
+            address?: { state: string; city: string; postal_code: string; address_line: string };
+          };
+          description_of_operation?: string;
+        };
+        callback: { url: string; headers?: { Authorization?: string } };
+      },
+      params: RequestParams = {},
+    ) =>
+      this.request<
+        { processId?: string; message?: string },
+        { errors?: { source?: string; type: string; message: string }[] }
+      >({
+        path: `/v1/accounts/${id}/certificates/generate`,
+        method: "POST",
+        body: data,
+        secure: true,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Get a certificate
+     *
+     * @tags Certificates
+     * @name CertificateGet
+     * @summary Get certificate
+     * @request GET:/v1/accounts/{accountId}/certificates/{certificateId}
+     * @secure
+     */
+    certificateGet: (accountId: string, certificateId: string, params: RequestParams = {}) =>
+      this.request<File, any>({
+        path: `/v1/accounts/${accountId}/certificates/${certificateId}`,
+        method: "GET",
+        secure: true,
+        ...params,
+      }),
+
+    /**
+     * @description Create a new invoice
+     *
+     * @tags Account, Invoices
+     * @name AddAccountDocumentInvoice
+     * @summary Create a new invoice
+     * @request POST:/v1/accounts/{id}/invoices
+     * @secure
+     */
+    addAccountDocumentInvoice: (
+      id: string,
+      data: {
+        data: {
+          invoice: {
+            external_id: string;
+            document_number: string;
+            document: string;
+            billing_date: string;
+            total: { amount: number; currency: string };
+          };
+          lines: { policy_id: string; transaction: { effective_date: string } }[];
+        };
+      },
+      params: RequestParams = {},
+    ) =>
+      this.request<{ status?: string }, { errors?: { source?: string; type: string; message: string }[] }>({
+        path: `/v1/accounts/${id}/invoices`,
+        method: "POST",
+        body: data,
+        secure: true,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
     /**
      * @description Apply account changes to an existing policy
      *
      * @tags Servicing
      * @name ApplyAccountChanges
      * @summary Apply account changes to an existing policy
-     * @request POST:/servicing/accounts/{id}/account_changes
+     * @request POST:/v1/servicing/accounts/{id}/account_changes
      * @secure
      */
     applyAccountChanges: (
@@ -2372,10 +2805,10 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
           postal_code?: string;
         }[];
         contacts?: {
-          first_name: string;
-          last_name: string;
-          email: string;
-          contact_numbers: { type: "phone" | "extension" | "mobile" | "fax" | "other"; number: string }[];
+          first_name?: string;
+          last_name?: string;
+          email?: string;
+          contact_numbers?: { type: "phone" | "extension" | "mobile" | "fax" | "other"; number: string }[];
         }[];
         email?: string;
         phone_number?: string;
@@ -2394,17 +2827,17 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
             postal_code?: string;
           }[];
           contacts?: {
-            first_name: string;
-            last_name: string;
-            email: string;
-            contact_numbers: { type: "phone" | "extension" | "mobile" | "fax" | "other"; number: string }[];
+            first_name?: string;
+            last_name?: string;
+            email?: string;
+            contact_numbers?: { type: "phone" | "extension" | "mobile" | "fax" | "other"; number: string }[];
           }[];
           email?: string;
           phone_number?: string;
         },
         { errors?: { source?: string; type: string; message: string }[] }
       >({
-        path: `/servicing/accounts/${id}/account_changes`,
+        path: `/v1/servicing/accounts/${id}/account_changes`,
         method: "POST",
         body: data,
         secure: true,
@@ -2419,7 +2852,8 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @tags Servicing
      * @name ApplyMidtermChanges
      * @summary Apply midterm changes to an existing policy
-     * @request POST:/servicing/policies/{id}/midterm_changes
+     * @request POST:/v1/servicing/policies/{id}/midterm_changes
+     * @deprecated
      * @secure
      */
     applyMidtermChanges: (
@@ -2477,7 +2911,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
         } & { request_payment?: boolean },
         { errors?: { source?: string; type: string; message: string }[] }
       >({
-        path: `/servicing/policies/${id}/midterm_changes`,
+        path: `/v1/servicing/policies/${id}/midterm_changes`,
         method: "POST",
         body: data,
         secure: true,
@@ -2492,12 +2926,12 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @tags Servicing
      * @name ApplyCancellation
      * @summary Apply cancellation to an existing policy
-     * @request POST:/servicing/policies/{id}/cancellation
+     * @request POST:/v1/servicing/policies/{id}/cancellation
      * @secure
      */
     applyCancellation: (id: string, data: ServicingCancellation, params: RequestParams = {}) =>
       this.request<ServicingCancellation, { errors?: { source?: string; type: string; message: string }[] }>({
-        path: `/servicing/policies/${id}/cancellation`,
+        path: `/v1/servicing/policies/${id}/cancellation`,
         method: "POST",
         body: data,
         secure: true,
@@ -2512,7 +2946,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @tags Servicing
      * @name ApplyReinstatement
      * @summary Apply reinstatement to an existing policy
-     * @request POST:/servicing/policies/{id}/reinstatement
+     * @request POST:/v1/servicing/policies/{id}/reinstatement
      * @secure
      */
     applyReinstatement: (
@@ -2566,7 +3000,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
         } & { request_payment?: boolean },
         { errors?: { source?: string; type: string; message: string }[] }
       >({
-        path: `/servicing/policies/${id}/reinstatement`,
+        path: `/v1/servicing/policies/${id}/reinstatement`,
         method: "POST",
         body: data,
         secure: true,
@@ -2581,12 +3015,13 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @tags Servicing
      * @name ApplyAudit
      * @summary Apply audit to an existing policy
-     * @request POST:/servicing/policies/{id}/audit
+     * @request POST:/v1/servicing/policies/{id}/audit
+     * @deprecated
      * @secure
      */
-    applyAudit: (id: string, data: ServicingCancellation, params: RequestParams = {}) =>
-      this.request<ServicingCancellation, { errors?: { source?: string; type: string; message: string }[] }>({
-        path: `/servicing/policies/${id}/audit`,
+    applyAudit: (id: string, data: ServicingMidtermChanges, params: RequestParams = {}) =>
+      this.request<ServicingMidtermChanges, { errors?: { source?: string; type: string; message: string }[] }>({
+        path: `/v1/servicing/policies/${id}/audit`,
         method: "POST",
         body: data,
         secure: true,
@@ -2601,7 +3036,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @tags Servicing
      * @name ClosePaidPayment
      * @summary Close payments that were paid
-     * @request POST:/servicing/endorsements/{id}/request_paid
+     * @request POST:/v1/servicing/endorsements/{id}/request_paid
      * @secure
      */
     closePaidPayment: (
@@ -2612,22 +3047,15 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
           amount_collected?: { amount: number; currency: string };
           payment_external_id?: string;
         };
-        callback: { url?: string };
+        callback: { url: string; headers?: { Authorization?: string } };
       },
       params: RequestParams = {},
     ) =>
       this.request<
-        {
-          data: {
-            payment_method?: string;
-            amount_collected?: { amount: number; currency: string };
-            payment_external_id?: string;
-          };
-          callback: { url?: string };
-        },
+        { data?: { processId?: string; message?: string } },
         { errors?: { source?: string; type: string; message: string }[] }
       >({
-        path: `/servicing/endorsements/${id}/request_paid`,
+        path: `/v1/servicing/endorsements/${id}/request_paid`,
         method: "POST",
         body: data,
         secure: true,
@@ -2642,12 +3070,19 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @tags Servicing
      * @name CloseNotPaidPayment
      * @summary Close payments that were not paid
-     * @request POST:/servicing/endorsements/{id}/request_not_paid
+     * @request POST:/v1/servicing/endorsements/{id}/request_not_paid
      * @secure
      */
-    closeNotPaidPayment: (id: string, data: { callback: { url?: string } }, params: RequestParams = {}) =>
-      this.request<{ callback: { url?: string } }, { errors?: { source?: string; type: string; message: string }[] }>({
-        path: `/servicing/endorsements/${id}/request_not_paid`,
+    closeNotPaidPayment: (
+      id: string,
+      data: { callback: { url: string; headers?: { Authorization?: string } } },
+      params: RequestParams = {},
+    ) =>
+      this.request<
+        { data?: { processId?: string; message?: string } },
+        { errors?: { source?: string; type: string; message: string }[] }
+      >({
+        path: `/v1/servicing/endorsements/${id}/request_not_paid`,
         method: "POST",
         body: data,
         secure: true,
@@ -2655,15 +3090,67 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
         format: "json",
         ...params,
       }),
-  };
-  requests = {
+
+    /**
+     * @description Sync accounts from third parties
+     *
+     * @tags Entities Sync
+     * @name AccountsSync
+     * @summary Sync accounts from third parties
+     * @request POST:/v1/accounts/sync
+     * @secure
+     */
+    accountsSync: (
+      query: { identifier: string },
+      data: {
+        data: {
+          id?: string;
+          external_id?: string;
+          business_information: { name: string };
+          addresses: {
+            type?: "mailing" | "billing";
+            address_line: string;
+            city?: string;
+            state?: string;
+            country_code?: string;
+            postal_code?: string;
+          }[];
+          contacts?: {
+            relationship?: "primary";
+            first_name: string;
+            last_name: string;
+            email: string;
+            communications_opt_out?: "none";
+            contact_numbers: { type: "phone" | "extension" | "mobile" | "fax" | "other"; number: string }[];
+          }[];
+          email: string;
+          phone_number: string;
+        };
+        callback: { url: string; headers?: { Authorization?: string } };
+      },
+      params: RequestParams = {},
+    ) =>
+      this.request<
+        { processId?: string; message?: string },
+        { errors?: { source?: string; type: string; message: string }[] }
+      >({
+        path: `/v1/accounts/sync`,
+        method: "POST",
+        query: query,
+        body: data,
+        secure: true,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
     /**
      * @description Create agent request
      *
      * @tags Agent request
      * @name CreateRequest
      * @summary Create agent request
-     * @request POST:/requests
+     * @request POST:/v1/requests
      * @secure
      */
     createRequest: (
@@ -2690,7 +3177,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
         },
         { errors?: { source?: string; type: string; message: string }[] }
       >({
-        path: `/requests`,
+        path: `/v1/requests`,
         method: "POST",
         body: data,
         secure: true,
@@ -2698,15 +3185,14 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
         format: "json",
         ...params,
       }),
-  };
-  agents = {
+
     /**
      * @description Create or update agent
      *
      * @tags Agent
      * @name SyncAgent
      * @summary Create or update agent
-     * @request POST:/agents/sync
+     * @request POST:/v1/agents/sync
      * @secure
      */
     syncAgent: (
@@ -2726,7 +3212,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
       params: RequestParams = {},
     ) =>
       this.request<{ process: { id: string } }, { errors?: { source?: string; type: string; message: string }[] }>({
-        path: `/agents/sync`,
+        path: `/v1/agents/sync`,
         method: "POST",
         body: data,
         secure: true,
@@ -2734,15 +3220,15 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
         format: "json",
         ...params,
       }),
-  };
-  applications = {
+
     /**
      * @description Add a new application
      *
      * @tags Application
      * @name AddApplicationRequest
      * @summary Create a new application
-     * @request POST:/applications
+     * @request POST:/v1/applications
+     * @deprecated
      * @secure
      */
     addApplicationRequest: (
@@ -2792,8 +3278,8 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
             };
           }
         >;
-        custom_fields?: { key?: string; value?: string }[];
-        other_information?: { key?: string; value?: string }[];
+        custom_fields?: { key: string; value: string }[];
+        other_information?: { key: string; value: string }[];
       },
       params: RequestParams = {},
     ) =>
@@ -2801,7 +3287,645 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
         { application_link?: string; account_id?: string },
         { errors?: { source?: string; type: string; message: string }[] }
       >({
-        path: `/applications`,
+        path: `/v1/applications`,
+        method: "POST",
+        body: data,
+        secure: true,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+  };
+  v2 = {
+    /**
+     * @description Retrieve policies of an account
+     *
+     * @tags Account
+     * @name GetAccountPoliciesV2
+     * @summary Retrieve policies of an account
+     * @request GET:/v2/accounts/{id}/policies
+     * @secure
+     */
+    getAccountPoliciesV2: (id: string, params: RequestParams = {}) =>
+      this.request<
+        {
+          data?: ({ id: string } & {
+            id?: string;
+            external_id?: string;
+            policy_number?: string;
+            account_id?: string;
+            status?:
+              | "Active"
+              | "Cancelled"
+              | "Cancellation in Progress"
+              | "Expired"
+              | "Flat Cancelled"
+              | "Pending"
+              | "Reinstated"
+              | "Under Review";
+            effective_date?: string;
+            expiration_date?: string;
+            cancellation_date?: string;
+            premium?: { amount: number; currency: string };
+            taxes?: { amount: number; currency: string };
+            fees?: { amount: number; currency: string };
+            insurance_details?:
+              | {
+                  packages: {
+                    package_id: string;
+                    coverages?: { coverage_id: string; current: number | string | boolean }[];
+                    lobs?: {
+                      lob_id: string;
+                      coverages?: { coverage_id: string; current: number | string | boolean }[];
+                    }[];
+                  }[];
+                  lobs?: any[];
+                }
+              | {
+                  packages?: any[];
+                  lobs: { lob_id: string; coverages?: { coverage_id: string; current: number | string | boolean }[] }[];
+                };
+            purchase_type?: "renewal_upload" | "renewal" | "new_business" | "cross_sell" | null;
+            renewal_flow?: "auto" | "nonauto" | null;
+            billing_carrier_id?: string;
+            issuing_carrier_id?: string;
+            finance_contract_number?: string;
+            intermediary_id?: string;
+            billing_type?: "Direct" | "Agency" | "Unknown";
+            invoiced_by?:
+              | "Carrier"
+              | "Coverwallet"
+              | "Premium Finance Company"
+              | "External PAS"
+              | "Account Current"
+              | "Unknown";
+          })[];
+        },
+        { errors?: { source?: string; type: string; message: string }[] }
+      >({
+        path: `/v2/accounts/${id}/policies`,
+        method: "GET",
+        secure: true,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description This endpoints creates a new policy and returns the data of the policy created including the policy_id that needs to be used later for policy updates. The external_id field should be unique
+     *
+     * @tags Policy
+     * @name AddPolicyV2
+     * @summary Add a new policy
+     * @request POST:/v2/policies
+     * @secure
+     */
+    addPolicyV2: (
+      data: {
+        id?: string;
+        external_id?: string;
+        policy_number?: string;
+        account_id?: string;
+        status?:
+          | "Active"
+          | "Cancelled"
+          | "Cancellation in Progress"
+          | "Expired"
+          | "Flat Cancelled"
+          | "Pending"
+          | "Reinstated"
+          | "Under Review";
+        effective_date?: string;
+        expiration_date?: string;
+        cancellation_date?: string;
+        premium?: { amount: number; currency: string };
+        taxes?: { amount: number; currency: string };
+        fees?: { amount: number; currency: string };
+        insurance_details?:
+          | {
+              packages: {
+                package_id: string;
+                coverages?: { coverage_id: string; current: number | string | boolean }[];
+                lobs?: { lob_id: string; coverages?: { coverage_id: string; current: number | string | boolean }[] }[];
+              }[];
+              lobs?: any[];
+            }
+          | {
+              packages?: any[];
+              lobs: { lob_id: string; coverages?: { coverage_id: string; current: number | string | boolean }[] }[];
+            };
+        purchase_type?: "renewal_upload" | "renewal" | "new_business" | "cross_sell" | null;
+        renewal_flow?: "auto" | "nonauto" | null;
+        billing_carrier_id?: string;
+        issuing_carrier_id?: string;
+        finance_contract_number?: string;
+        intermediary_id?: string;
+        billing_type?: "Direct" | "Agency" | "Unknown";
+        invoiced_by?:
+          | "Carrier"
+          | "Coverwallet"
+          | "Premium Finance Company"
+          | "External PAS"
+          | "Account Current"
+          | "Unknown";
+      },
+      params: RequestParams = {},
+    ) =>
+      this.request<
+        {
+          data?: { id: string } & {
+            id?: string;
+            external_id?: string;
+            policy_number?: string;
+            account_id?: string;
+            status?:
+              | "Active"
+              | "Cancelled"
+              | "Cancellation in Progress"
+              | "Expired"
+              | "Flat Cancelled"
+              | "Pending"
+              | "Reinstated"
+              | "Under Review";
+            effective_date?: string;
+            expiration_date?: string;
+            cancellation_date?: string;
+            premium?: { amount: number; currency: string };
+            taxes?: { amount: number; currency: string };
+            fees?: { amount: number; currency: string };
+            insurance_details?:
+              | {
+                  packages: {
+                    package_id: string;
+                    coverages?: { coverage_id: string; current: number | string | boolean }[];
+                    lobs?: {
+                      lob_id: string;
+                      coverages?: { coverage_id: string; current: number | string | boolean }[];
+                    }[];
+                  }[];
+                  lobs?: any[];
+                }
+              | {
+                  packages?: any[];
+                  lobs: { lob_id: string; coverages?: { coverage_id: string; current: number | string | boolean }[] }[];
+                };
+            purchase_type?: "renewal_upload" | "renewal" | "new_business" | "cross_sell" | null;
+            renewal_flow?: "auto" | "nonauto" | null;
+            billing_carrier_id?: string;
+            issuing_carrier_id?: string;
+            finance_contract_number?: string;
+            intermediary_id?: string;
+            billing_type?: "Direct" | "Agency" | "Unknown";
+            invoiced_by?:
+              | "Carrier"
+              | "Coverwallet"
+              | "Premium Finance Company"
+              | "External PAS"
+              | "Account Current"
+              | "Unknown";
+          };
+        },
+        { errors?: { source?: string; type: string; message: string }[] }
+      >({
+        path: `/v2/policies`,
+        method: "POST",
+        body: data,
+        secure: true,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Fetch policies filtering by any of the supported parameters listed below. If no parameters are provided, no policies will be returned and a error will be triggered.
+     *
+     * @tags Policy
+     * @name FetchPoliciesByFilter
+     * @summary Fetch policies filtered by query params
+     * @request GET:/v2/policies
+     * @secure
+     */
+    fetchPoliciesByFilter: (
+      query?: { external_id?: string; policy_number?: string; effective_date?: string },
+      params: RequestParams = {},
+    ) =>
+      this.request<
+        {
+          data?: ({ id: string } & {
+            id?: string;
+            external_id?: string;
+            policy_number?: string;
+            account_id?: string;
+            status?:
+              | "Active"
+              | "Cancelled"
+              | "Cancellation in Progress"
+              | "Expired"
+              | "Flat Cancelled"
+              | "Pending"
+              | "Reinstated"
+              | "Under Review";
+            effective_date?: string;
+            expiration_date?: string;
+            cancellation_date?: string;
+            premium?: { amount: number; currency: string };
+            taxes?: { amount: number; currency: string };
+            fees?: { amount: number; currency: string };
+            insurance_details?:
+              | {
+                  packages: {
+                    package_id: string;
+                    coverages?: { coverage_id: string; current: number | string | boolean }[];
+                    lobs?: {
+                      lob_id: string;
+                      coverages?: { coverage_id: string; current: number | string | boolean }[];
+                    }[];
+                  }[];
+                  lobs?: any[];
+                }
+              | {
+                  packages?: any[];
+                  lobs: { lob_id: string; coverages?: { coverage_id: string; current: number | string | boolean }[] }[];
+                };
+            purchase_type?: "renewal_upload" | "renewal" | "new_business" | "cross_sell" | null;
+            renewal_flow?: "auto" | "nonauto" | null;
+            billing_carrier_id?: string;
+            issuing_carrier_id?: string;
+            finance_contract_number?: string;
+            intermediary_id?: string;
+            billing_type?: "Direct" | "Agency" | "Unknown";
+            invoiced_by?:
+              | "Carrier"
+              | "Coverwallet"
+              | "Premium Finance Company"
+              | "External PAS"
+              | "Account Current"
+              | "Unknown";
+          })[];
+        },
+        { errors?: { source?: string; type: string; message: string }[] }
+      >({
+        path: `/v2/policies`,
+        method: "GET",
+        query: query,
+        secure: true,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Apply midterm changes to an existing policy
+     *
+     * @tags Servicing
+     * @name ApplyMidtermChangesV2
+     * @summary Apply midterm changes to an existing policy
+     * @request POST:/v2/servicing/policies/{id}/midterm_changes
+     * @secure
+     */
+    applyMidtermChangesV2: (
+      id: string,
+      data: {
+        description: string;
+        effective_date: string;
+        premium_change: { amount: number; currency: string };
+        taxes_change: { amount: number; currency: string };
+        fees_change: {
+          carrier: { amount: number; currency: string };
+          agency: { amount: number; currency: string };
+          external_agency: { amount: number; currency: string };
+        };
+        status:
+          | "NOT_STARTED"
+          | "PENDING_PAYMENT"
+          | "UNDER_REVIEW,"
+          | "APPROVED"
+          | "PAYMENT_NOT_COLLECTED"
+          | "NOT_NEEDED"
+          | "VOIDED"
+          | null;
+        pending_action: boolean;
+        invoice_external_id?: string;
+      } & {
+        insurance_details?:
+          | {
+              packages: {
+                package_id: string;
+                coverages?: { coverage_id: string; current: number | string | boolean }[];
+                lobs?: { lob_id: string; coverages?: { coverage_id: string; current: number | string | boolean }[] }[];
+              }[];
+              lobs?: any[];
+            }
+          | {
+              packages?: any[];
+              lobs: { lob_id: string; coverages?: { coverage_id: string; current: number | string | boolean }[] }[];
+            };
+        request_payment?: boolean;
+      },
+      params: RequestParams = {},
+    ) =>
+      this.request<
+        {
+          description: string;
+          effective_date: string;
+          premium_change: { amount: number; currency: string };
+          taxes_change: { amount: number; currency: string };
+          fees_change: {
+            carrier: { amount: number; currency: string };
+            agency: { amount: number; currency: string };
+            external_agency: { amount: number; currency: string };
+          };
+          status:
+            | "NOT_STARTED"
+            | "PENDING_PAYMENT"
+            | "UNDER_REVIEW,"
+            | "APPROVED"
+            | "PAYMENT_NOT_COLLECTED"
+            | "NOT_NEEDED"
+            | "VOIDED"
+            | null;
+          pending_action: boolean;
+          invoice_external_id?: string;
+        } & {
+          insurance_details?:
+            | {
+                packages: {
+                  package_id: string;
+                  coverages?: { coverage_id: string; current: number | string | boolean }[];
+                  lobs?: {
+                    lob_id: string;
+                    coverages?: { coverage_id: string; current: number | string | boolean }[];
+                  }[];
+                }[];
+                lobs?: any[];
+              }
+            | {
+                packages?: any[];
+                lobs: { lob_id: string; coverages?: { coverage_id: string; current: number | string | boolean }[] }[];
+              };
+          request_payment?: boolean;
+        },
+        { errors?: { source?: string; type: string; message: string }[] }
+      >({
+        path: `/v2/servicing/policies/${id}/midterm_changes`,
+        method: "POST",
+        body: data,
+        secure: true,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Apply audit to an existing policy
+     *
+     * @tags Servicing
+     * @name ApplyAuditV2
+     * @summary Apply audit to an existing policy
+     * @request POST:/v2/servicing/policies/{id}/audit
+     * @secure
+     */
+    applyAuditV2: (
+      id: string,
+      data: {
+        description: string;
+        effective_date: string;
+        premium_change: { amount: number; currency: string };
+        taxes_change: { amount: number; currency: string };
+        fees_change: {
+          carrier: { amount: number; currency: string };
+          agency: { amount: number; currency: string };
+          external_agency: { amount: number; currency: string };
+        };
+        status:
+          | "NOT_STARTED"
+          | "PENDING_PAYMENT"
+          | "UNDER_REVIEW,"
+          | "APPROVED"
+          | "PAYMENT_NOT_COLLECTED"
+          | "NOT_NEEDED"
+          | "VOIDED"
+          | null;
+        pending_action: boolean;
+        invoice_external_id?: string;
+      } & {
+        insurance_details?:
+          | {
+              packages: {
+                package_id: string;
+                coverages?: { coverage_id: string; current: number | string | boolean }[];
+                lobs?: { lob_id: string; coverages?: { coverage_id: string; current: number | string | boolean }[] }[];
+              }[];
+              lobs?: any[];
+            }
+          | {
+              packages?: any[];
+              lobs: { lob_id: string; coverages?: { coverage_id: string; current: number | string | boolean }[] }[];
+            };
+        request_payment?: boolean;
+      },
+      params: RequestParams = {},
+    ) =>
+      this.request<
+        {
+          description: string;
+          effective_date: string;
+          premium_change: { amount: number; currency: string };
+          taxes_change: { amount: number; currency: string };
+          fees_change: {
+            carrier: { amount: number; currency: string };
+            agency: { amount: number; currency: string };
+            external_agency: { amount: number; currency: string };
+          };
+          status:
+            | "NOT_STARTED"
+            | "PENDING_PAYMENT"
+            | "UNDER_REVIEW,"
+            | "APPROVED"
+            | "PAYMENT_NOT_COLLECTED"
+            | "NOT_NEEDED"
+            | "VOIDED"
+            | null;
+          pending_action: boolean;
+          invoice_external_id?: string;
+        } & {
+          insurance_details?:
+            | {
+                packages: {
+                  package_id: string;
+                  coverages?: { coverage_id: string; current: number | string | boolean }[];
+                  lobs?: {
+                    lob_id: string;
+                    coverages?: { coverage_id: string; current: number | string | boolean }[];
+                  }[];
+                }[];
+                lobs?: any[];
+              }
+            | {
+                packages?: any[];
+                lobs: { lob_id: string; coverages?: { coverage_id: string; current: number | string | boolean }[] }[];
+              };
+          request_payment?: boolean;
+        },
+        { errors?: { source?: string; type: string; message: string }[] }
+      >({
+        path: `/v2/servicing/policies/${id}/audit`,
+        method: "POST",
+        body: data,
+        secure: true,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Sync policies from third parties
+     *
+     * @tags Entities Sync
+     * @name PoliciesSyncV2
+     * @summary Sync policies from third parties
+     * @request POST:/v2/policies/sync
+     * @secure
+     */
+    policiesSyncV2: (
+      query: { identifier: string },
+      data: {
+        data: {
+          external_id: string;
+          policy_number?: string;
+          account_id?: string;
+          status: string;
+          effective_date: string;
+          expiration_date?: string;
+          cancellation_date?: string;
+          premium?: { amount: number; currency: string };
+          taxes?: { amount: number; currency: string };
+          fees?: { amount: number; currency: string };
+          purchase_type?: string;
+          renewal_flow?: string;
+          billing_carrier_id?: string;
+          issuing_carrier_id?: string;
+          intermediary_id?: string;
+          billing_type?: string;
+          invoiced_by?: string;
+          insurance_details?:
+            | {
+                packages: {
+                  package_id: string;
+                  coverages?: { coverage_id: string; current: number | string | boolean }[];
+                  lobs?: {
+                    lob_id: string;
+                    coverages?: { coverage_id: string; current: number | string | boolean }[];
+                  }[];
+                }[];
+                lobs?: any[];
+              }
+            | {
+                packages?: any[];
+                lobs: { lob_id: string; coverages?: { coverage_id: string; current: number | string | boolean }[] }[];
+              };
+        };
+        callback: { url: string; headers?: { Authorization?: string } };
+      },
+      params: RequestParams = {},
+    ) =>
+      this.request<
+        { processId?: string; message?: string },
+        { errors?: { source?: string; type: string; message: string }[] }
+      >({
+        path: `/v2/policies/sync`,
+        method: "POST",
+        query: query,
+        body: data,
+        secure: true,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Add a new application
+     *
+     * @tags Application
+     * @name AddApplicationRequestV2
+     * @summary Create a new application
+     * @request POST:/v2/applications
+     * @secure
+     */
+    addApplicationRequestV2: (
+      data: {
+        account: {
+          external_id?: string;
+          business_information: {
+            name: string;
+            type?: string;
+            website?: string;
+            identification_number?: string;
+            year_established?: number;
+            years_of_experience?: number;
+            annual_revenue?: { amount: number; currency: string };
+            fulltime_employees?: number;
+            parttime_employees?: number;
+            employees_annual_payroll?: number;
+          };
+          industry?: { type?: "naics"; code?: string };
+          addresses?: {
+            type?: "mailing" | "billing";
+            address_line?: string;
+            city?: string;
+            state?: string;
+            country_code?: string;
+            postal_code?: string;
+          }[];
+          email: string;
+          phone_number?: string;
+        };
+        contacts: {
+          relationship?: "primary" | "driver" | "owner" | "other";
+          first_name: string;
+          last_name: string;
+          email?: string;
+          communications_opt_out?: "email" | "sms" | "all" | "none";
+          contact_numbers?: { type: "phone" | "extension" | "mobile" | "fax" | "other"; number: string }[];
+        }[];
+        partnership: { id: string; lead_external_id?: string; source?: string };
+        insurance_details?: {
+          packages?: {
+            package_id: string;
+            coverages?: {
+              coverage_id: string;
+              current?: number | string | boolean;
+              maximum?: number;
+              minimum?: number;
+            }[];
+            lobs?: {
+              lob_id: string;
+              coverages?: {
+                coverage_id: string;
+                current?: number | string | boolean;
+                maximum?: number;
+                minimum?: number;
+              }[];
+            }[];
+          }[];
+          lobs?: {
+            lob_id: string;
+            coverages?: {
+              coverage_id: string;
+              current?: number | string | boolean;
+              maximum?: number;
+              minimum?: number;
+            }[];
+          }[];
+        };
+        custom_fields?: { key: string; value: string }[];
+        other_information?: { key: string; value: string }[];
+      },
+      params: RequestParams = {},
+    ) =>
+      this.request<
+        { application_link?: string; account_id?: string },
+        { errors?: { source?: string; type: string; message: string }[] }
+      >({
+        path: `/v2/applications`,
         method: "POST",
         body: data,
         secure: true,
